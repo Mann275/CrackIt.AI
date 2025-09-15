@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import DashboardLayout from '../components/DashboardLayout';
+import ChecklistModal from '../components/dashboard/ChecklistModal';
 import checklistService from '../services/checklistService';
 import { toast } from 'react-hot-toast';
 import {
   CheckCircleIcon,
   XCircleIcon,
   PlusIcon,
-  AcademicCapIcon,
-  LightBulbIcon,
+  ArrowPathIcon,
   BeakerIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
+  LightBulbIcon,
+  AcademicCapIcon
 } from '@heroicons/react/24/outline';
 
 const ChecklistPage = () => {
@@ -89,6 +91,27 @@ const ChecklistPage = () => {
       await checklistService.deleteChecklistItem(checklistId, itemId);
       fetchChecklists();
       toast.success('Item deleted');
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleGenerateChecklist = async () => {
+    try {
+      const checklist = await checklistService.generateChecklist(selectedDomain);
+      setChecklists(prev => [...prev, checklist]);
+      toast.success(`${selectedDomain} checklist generated successfully!`);
+    } catch (error) {
+      toast.error(error.message);
+      throw error;
+    }
+  };
+
+  const handleResetChecklist = async (checklistId) => {
+    try {
+      await checklistService.resetChecklist(checklistId);
+      await fetchChecklists();
+      toast.success('Checklist progress reset');
     } catch (error) {
       toast.error(error.message);
     }

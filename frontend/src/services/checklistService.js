@@ -1,6 +1,36 @@
 import api from './api';
 
 const checklistService = {
+  // Generate checklist using Gemini API
+  generateChecklist: async (category) => {
+    try {
+      const response = await api.post('/checklist/generate', { category });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Error generating checklist');
+    }
+  },
+
+  // Get checklist by category
+  getChecklistByCategory: async (category) => {
+    try {
+      const response = await api.get(`/checklist/category/${category}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Error fetching checklist');
+    }
+  },
+
+  // Reset checklist progress
+  resetChecklist: async (checklistId) => {
+    try {
+      const response = await api.post(`/checklist/${checklistId}/reset`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Error resetting checklist');
+    }
+  },
+
   // Get all checklists for the user
   getUserChecklists: async () => {
     try {

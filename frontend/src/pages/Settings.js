@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import DashboardLayout from '../components/DashboardLayout';
+import { ChevronRightIcon } from '@heroicons/react/24/outline';
 
 const Settings = () => {
   const navigate = useNavigate();

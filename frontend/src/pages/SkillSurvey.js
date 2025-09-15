@@ -147,11 +147,25 @@ const SkillSurvey = () => {
     }
   };
 
+  // Load saved data from localStorage on component mount
+  React.useEffect(() => {
+    const savedData = localStorage.getItem('skillSurveyData');
+    if (savedData) {
+      setFormData(JSON.parse(savedData));
+    }
+  }, []);
+
+  // Save data to localStorage whenever it changes
+  React.useEffect(() => {
+    localStorage.setItem('skillSurveyData', JSON.stringify(formData));
+  }, [formData]);
+
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
+      <BackButton />
       <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className={`rounded-lg shadow-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} p-8`}>
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <h1 className="text-3xl font-bold">Skill Assessment</h1>
             <p className="mt-2 text-lg">Help us understand your current skill level to create a personalized roadmap</p>
           </div>
@@ -168,10 +182,10 @@ const SkillSurvey = () => {
               <h2 className="text-xl font-semibold mb-4">Data Structures & Algorithms</h2>
               <p className="text-sm mb-4">Rate your knowledge level in the following DSA topics:</p>
               
-              <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {dsaTopics.map(topic => (
-                  <div key={topic.id}>
-                    <div className="flex justify-between items-center mb-2">
+                  <div key={topic.id} className="border rounded-lg p-3">
+                    <div className="flex justify-between items-center mb-1">
                       <label htmlFor={topic.id} className="text-sm font-medium">{topic.name}</label>
                       <span className="text-sm">
                         {getSkillLevelText(formData.dsaSkills[topic.id])}

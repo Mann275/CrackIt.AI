@@ -16,6 +16,7 @@ const io = socketIo(server, {
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const roadmapRoutes = require('./routes/roadmapRoutes');
+const aiRoadmapRoutes = require('./routes/aiRoadmapRoutes');
 const checklistRoutes = require('./routes/checklistRoutes');
 const goalRoutes = require('./routes/goalRoutes');
 const skillSurveyRoutes = require('./routes/skillSurveyRoutes');
@@ -106,6 +107,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/roadmap', roadmapRoutes);
+app.use('/api/roadmap/ai', aiRoadmapRoutes);
 app.use('/api/checklist', checklistRoutes);
 app.use('/api/goals', goalRoutes);
 app.use('/api/survey', skillSurveyRoutes);

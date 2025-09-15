@@ -14,6 +14,7 @@ import SkillSurvey from './pages/SkillSurvey';
 import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
 import Roadmap from './pages/Roadmap';
+import AIRoadmap from './pages/AIRoadmap';
 import Chatroom from './pages/Chatroom';
 import Checklist from './pages/Checklist';
 import MockTests from './pages/MockTests';
@@ -133,7 +134,7 @@ function App() {
               path="/roadmap" 
               element={
                 <ProtectedRoute>
-                  <Roadmap />
+                  <AIRoadmap />
                 </ProtectedRoute>
               } 
             />
