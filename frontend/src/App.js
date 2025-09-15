@@ -17,6 +17,7 @@ import MockTests from './pages/MockTests';
 import MockTest from './pages/MockTest';
 import TestResults from './pages/TestResults';
 import CreateTest from './pages/CreateTest';
+import Roadmap from './pages/Roadmap';
 import './index.css';
 
 // Protected route component
@@ -86,16 +87,9 @@ function App() {
             }}
           />
           
-          {/* Custom Navbar handling (hidden on homepage) */}
+          {/* All routes with conditional navbar */}
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/features" element={<Features />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="*" element={<NavbarWrapper />} />
-          </Routes>
-          
-          <Routes>
             <Route path="/features" element={<Features />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -163,6 +157,14 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/roadmap" 
+              element={
+                <ProtectedRoute>
+                  <Roadmap />
+                </ProtectedRoute>
+              } 
+            />
           </Routes>
         </AuthProvider>
       </ThemeProvider>
@@ -173,8 +175,10 @@ function App() {
 // Wrapper component to conditionally render Navbar
 const NavbarWrapper = () => {
   const { pathname } = window.location;
-  // Hide navbar on homepage
-  if (pathname !== '/' && pathname !== '/features' && pathname !== '/login' && pathname !== '/register') {
+  const publicRoutes = ['/', '/features', '/login', '/register'];
+  
+  // Show Navbar only on authenticated routes
+  if (!publicRoutes.includes(pathname)) {
     return <Navbar />;
   }
   return null;

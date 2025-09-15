@@ -6,8 +6,17 @@ import { FiArrowRight, FiFeather } from 'react-icons/fi';
 import { RiRobot2Line } from 'react-icons/ri';
 
 const Home = () => {
-  const { darkMode, toggleDarkMode } = useTheme();
+  const { darkMode } = useTheme();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   
+  useEffect(() => {
+    // If user is already logged in, redirect to dashboard
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
+
   // Animation variants
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
@@ -69,7 +78,7 @@ const Home = () => {
         </motion.div>
       </div>
       
-      {/* Hero Section - Modernized with Framer Motion */}
+      {/* Hero Section - Simple and Clean */}
       <section className="py-0 md:py-0 bg-gray-900 text-white relative overflow-hidden h-screen flex items-center justify-center">
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-900 via-purple-900 to-indigo-800 opacity-80"></div>
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMyMjIiIGZpbGwtb3BhY2l0eT0iLjA1Ij48cGF0aCBkPSJNMzAgMHYzMGgzMHYzMGgtMzB2LTMwaC0zMFYwaDMweiIvPjwvZz48L2c+PC9zdmc+')] opacity-10"></div>
@@ -81,48 +90,6 @@ const Home = () => {
             animate="visible"
             variants={staggerChildren}
           >
-            <motion.div 
-              className="relative w-64 h-64 md:w-80 md:h-80 mb-8 rounded-xl overflow-hidden shadow-2xl"
-              variants={fadeIn}
-            >
-              <img 
-                src="https://img.freepik.com/free-photo/3d-rendering-young-asian-man-working-with-laptop-computer-desk_1150-65757.jpg" 
-                alt="Programmer in 3D"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "https://img.freepik.com/free-vector/programmers-using-javascript-programming-language-computer-tiny-people-javascript-language-javascript-engine-js-web-development-concept-bright-vibrant-violet-isolated-illustration_335657-986.jpg";
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/90 via-indigo-900/40 to-transparent"></div>
-              
-              {/* Animated elements */}
-              <motion.div 
-                className="absolute top-5 right-5 w-12 h-12 rounded-full bg-emerald-500/20"
-                animate={{ 
-                  scale: [1, 1.2, 1],
-                  opacity: [0.2, 0.5, 0.2] 
-                }}
-                transition={{ 
-                  repeat: Infinity,
-                  duration: 3,
-                  ease: "easeInOut" 
-                }}
-              ></motion.div>
-              <motion.div 
-                className="absolute bottom-10 left-5 w-8 h-8 rounded-full bg-purple-500/30"
-                animate={{ 
-                  scale: [1, 1.3, 1],
-                  opacity: [0.3, 0.6, 0.3] 
-                }}
-                transition={{ 
-                  repeat: Infinity,
-                  duration: 2.5,
-                  delay: 0.5,
-                  ease: "easeInOut" 
-                }}
-              ></motion.div>
-            </motion.div>
             
             <motion.h1 
               className="text-4xl md:text-6xl font-bold mb-6 text-white max-w-4xl"
