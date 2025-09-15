@@ -2,9 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { SidebarProvider } from './context/SidebarContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Features from './pages/Features';
 import Login from './pages/Login';
@@ -13,11 +13,10 @@ import GoalSetup from './pages/GoalSetup';
 import SkillSurvey from './pages/SkillSurvey';
 import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
-import MockTests from './pages/MockTests';
-import MockTest from './pages/MockTest';
-import TestResults from './pages/TestResults';
-import CreateTest from './pages/CreateTest';
 import Roadmap from './pages/Roadmap';
+import Chatroom from './pages/Chatroom';
+import Checklist from './pages/Checklist';
+import AuthAwareLayout from './components/AuthAwareLayout';
 import './index.css';
 
 // Protected route component
@@ -67,7 +66,8 @@ function App() {
     <Router>
       <ThemeProvider>
         <AuthProvider>
-          {/* Custom Toast Container with Dark Theme */}
+          <SidebarProvider>
+            {/* Custom Toast Container with Dark Theme */}
           <ToastContainer
             position="top-right"
             autoClose={3000}
@@ -87,12 +87,15 @@ function App() {
             }}
           />
           
-          {/* All routes with conditional navbar */}
+          {/* Routes */}
           <Routes>
+            {/* Public Routes */}
             <Route path="/" element={<Home />} />
             <Route path="/features" element={<Features />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+
+            {/* Protected Routes */}
             <Route 
               path="/goal-setup" 
               element={
@@ -118,38 +121,6 @@ function App() {
               } 
             />
             <Route 
-              path="/tests" 
-              element={
-                <ProtectedRoute>
-                  <MockTests />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/tests/:testId" 
-              element={
-                <ProtectedRoute>
-                  <MockTest />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/test-results/:resultId" 
-              element={
-                <ProtectedRoute>
-                  <TestResults />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/create-test" 
-              element={
-                <ProtectedRoute>
-                  <CreateTest />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
               path="/settings" 
               element={
                 <ProtectedRoute>
@@ -165,23 +136,28 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/chat" 
+              element={
+                <ProtectedRoute>
+                  <Chatroom />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/checklist" 
+              element={
+                <ProtectedRoute>
+                  <Checklist />
+                </ProtectedRoute>
+              } 
+            />
           </Routes>
+          </SidebarProvider>
         </AuthProvider>
       </ThemeProvider>
     </Router>
   );
 }
-
-// Wrapper component to conditionally render Navbar
-const NavbarWrapper = () => {
-  const { pathname } = window.location;
-  const publicRoutes = ['/', '/features', '/login', '/register'];
-  
-  // Show Navbar only on authenticated routes
-  if (!publicRoutes.includes(pathname)) {
-    return <Navbar />;
-  }
-  return null;
-};
 
 export default App;

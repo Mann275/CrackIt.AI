@@ -1,16 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import DashboardLayout from '../components/DashboardLayout';
 
 const SkillSurvey = () => {
-  const { darkMode } = useTheme();
+  const { colors } = useTheme();
   const { user, updateProfile } = useAuth();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  
+  const [message, setMessage] = useState('');
+  const [surveyData, setSurveyData] = useState({
+    dsaTopics: [],
+    coreSubjects: [],
+    developmentExperience: []
+  });
+
+  // Skill survey data from backend
   const [formData, setFormData] = useState({
     dsaSkills: {
       arrays: 1,
@@ -106,20 +114,96 @@ const SkillSurvey = () => {
     }
   };
 
+  useEffect(() => {
+    // Load existing survey data if any
+    const fetchSurveyData = async () => {
+      try {
+        const response = await fetch('/api/survey', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data) {
+            setSurveyData(data);
+            // Convert survey data to form data format
+            const dsaSkills = {};
+            const coreCSSkills = {};
+            const devExperience = {};
+
+            data.dsaTopics.forEach(topic => {
+              dsaSkills[topic.name.toLowerCase().replace(/\s+/g, '')] = Math.ceil(topic.confidenceLevel / 20);
+            });
+
+            data.coreSubjects.forEach(subject => {
+              coreCSSkills[subject.name.toLowerCase().replace(/\s+/g, '')] = Math.ceil(subject.confidenceLevel / 20);
+            });
+
+            data.developmentExperience.forEach(exp => {
+              devExperience[exp.name.toLowerCase().replace(/\s+/g, '')] = Math.ceil(exp.confidenceLevel / 20);
+            });
+
+            setFormData(prev => ({
+              ...prev,
+              dsaSkills: { ...prev.dsaSkills, ...dsaSkills },
+              coreCSSkills: { ...prev.coreCSSkills, ...coreCSSkills },
+              devExperience: { ...prev.devExperience, ...devExperience }
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching survey data:', error);
+      }
+    };
+
+    fetchSurveyData();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setMessage('');
     
     try {
-      // Save skills to user profile
+      // Convert form data to survey format
+      const surveyData = {
+        dsaTopics: Object.entries(formData.dsaSkills).map(([key, value]) => ({
+          name: key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()),
+          confidenceLevel: value * 20
+        })),
+        coreSubjects: Object.entries(formData.coreCSSkills).map(([key, value]) => ({
+          name: key.toUpperCase(),
+          confidenceLevel: value * 20
+        })),
+        developmentExperience: Object.entries(formData.devExperience).map(([key, value]) => ({
+          name: key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()),
+          confidenceLevel: value * 20
+        }))
+      };
+
+      // Save survey data
+      const surveyResponse = await fetch('/api/survey', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(surveyData)
+      });
+
+      if (!surveyResponse.ok) {
+        throw new Error('Failed to save survey data');
+      }
+
+      // Update user profile
       await updateProfile({
         skills: formData,
         hasCompletedSkillSurvey: true
       });
       
-      // Send data to AI service for roadmap generation
-      const response = await fetch('http://localhost:5000/api/roadmap/generate', {
+      // Generate roadmap
+      const roadmapResponse = await fetch('/api/roadmap/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -127,17 +211,21 @@ const SkillSurvey = () => {
         },
         body: JSON.stringify({ 
           userId: user._id,
-          skills: formData 
+          skills: formData,
+          survey: surveyData
         })
       });
       
-      if (!response.ok) {
+      if (!roadmapResponse.ok) {
         throw new Error('Failed to generate roadmap');
       }
       
-      navigate('/dashboard');
+      setMessage('Survey completed! Generating your personalized roadmap...');
+      setTimeout(() => {
+        navigate('/roadmap');
+      }, 1500);
     } catch (err) {
-      setError('Failed to save your skill assessment. Please try again.');
+      setMessage('Failed to save your skill assessment. Please try again.');
       console.error(err);
     } finally {
       setLoading(false);

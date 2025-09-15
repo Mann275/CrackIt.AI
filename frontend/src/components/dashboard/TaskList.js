@@ -26,11 +26,13 @@ const TaskList = ({ tasks, onToggleTask }) => {
       variants={listVariants}
       initial="hidden"
       animate="show"
-      className={`rounded-xl shadow-sm ${
-        isDarkMode ? 'bg-gray-800' : 'bg-white'
+      className={`rounded-xl shadow-lg ${
+        isDarkMode ? 'bg-slate-800/90 backdrop-blur-sm border border-slate-700/50' : 'bg-white'
       } p-6`}
     >
-      <h3 className="text-lg font-semibold mb-4">Upcoming Tasks</h3>
+      <h3 className={`text-lg font-semibold mb-4 ${
+        isDarkMode ? 'text-slate-100' : 'text-slate-800'
+      }`}>Upcoming Tasks</h3>
       
       <div className="space-y-3">
         {tasks.map((task) => (
@@ -39,8 +41,8 @@ const TaskList = ({ tasks, onToggleTask }) => {
             variants={itemVariants}
             className={`flex items-center justify-between p-3 rounded-lg ${
               isDarkMode 
-                ? task.completed ? 'bg-gray-700/50' : 'bg-gray-700'
-                : task.completed ? 'bg-gray-50' : 'bg-gray-100'
+                ? task.completed ? 'bg-slate-700/50 border border-slate-600/30' : 'bg-slate-700/80 border border-slate-600/50'
+                : task.completed ? 'bg-slate-50' : 'bg-slate-100'
             } transition-colors`}
           >
             <div className="flex items-center space-x-3">
@@ -48,10 +50,10 @@ const TaskList = ({ tasks, onToggleTask }) => {
                 onClick={() => onToggleTask(task.id)}
                 className={`p-1 rounded-full ${
                   task.completed
-                    ? 'text-green-500'
+                    ? 'text-green-400 hover:text-green-300'
                     : isDarkMode
-                    ? 'text-gray-400 hover:text-white'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'text-slate-300 hover:text-white'
+                    : 'text-slate-500 hover:text-slate-700'
                 } transition-colors`}
               >
                 <CheckCircleIcon className={`h-6 w-6 ${
@@ -60,20 +62,22 @@ const TaskList = ({ tasks, onToggleTask }) => {
               </button>
               <div>
                 <p className={`font-medium ${
-                  task.completed && (isDarkMode ? 'text-gray-400' : 'text-gray-500')
+                  task.completed 
+                    ? isDarkMode ? 'text-slate-400' : 'text-slate-500'
+                    : isDarkMode ? 'text-slate-100' : 'text-slate-800'
                 }`}>
                   {task.title}
                 </p>
                 <p className={`text-sm ${
-                  isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                  isDarkMode ? 'text-slate-300' : 'text-slate-600'
                 }`}>
                   {task.category}
                 </p>
               </div>
             </div>
-            <span className={`text-sm ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-500'
-            }`}>
+            <span className={`text-sm font-medium ${
+              isDarkMode ? 'text-slate-300' : 'text-slate-500'
+            }`}
               {task.dueDate}
             </span>
           </motion.div>

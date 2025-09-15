@@ -1,433 +1,343 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import DashboardLayout from '../components/DashboardLayout';
 
 const Settings = () => {
-  const { darkMode } = useTheme();
-  const { user, updateProfile, changePassword } = useAuth();
   const navigate = useNavigate();
-  
-  const [profileTab, setProfileTab] = useState('general');
-  const [generalInfo, setGeneralInfo] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-  });
-  
+  const { colors, darkMode, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [showLogoutMessage, setShowLogoutMessage] = useState(false);
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
-    confirmPassword: '',
+    confirmPassword: ''
   });
-  
-  const [photoURL, setPhotoURL] = useState(
-    user?.photoURL || 'https://placehold.co/200x200/1e40af/ffffff?text=User'
-  );
-  
-  const [uploadedImage, setUploadedImage] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ text: '', type: '' });
 
-  const handleTabChange = (tab) => {
-    setProfileTab(tab);
-    setMessage({ text: '', type: '' });
-  };
-
-  const handleGeneralInfoChange = (e) => {
-    setGeneralInfo({
-      ...generalInfo,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handlePasswordChange = (e) => {
-    setPasswordData({
-      ...passwordData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setUploadedImage(file);
-      const reader = new FileReader();
-      reader.onload = (e) => setPhotoURL(e.target.result);
-      reader.readAsDataURL(file);
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { duration: 0.3 }
     }
   };
 
-  const handleGeneralInfoSubmit = async (e) => {
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5 }
+    }
+  };
+
+  const handlePasswordSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-    try {
-      await updateProfile({ name: generalInfo.name });
-      setMessage({ 
-        text: 'Profile updated successfully!', 
-        type: 'success' 
-      });
-      setTimeout(() => navigate('/dashboard'), 2000);
-    } catch (err) {
-      setMessage({ 
-        text: err.message || 'Failed to update profile', 
-        type: 'error' 
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePasswordSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setMessage({ 
-        text: 'New passwords do not match', 
-        type: 'error' 
-      });
-      return;
-    }
-    
-    if (passwordData.newPassword.length < 8) {
-      setMessage({ 
-        text: 'Password must be at least 8 characters long', 
-        type: 'error' 
-      });
-      return;
-    }
-    
-    setLoading(true);
-    try {
-      await changePassword(
-        passwordData.currentPassword,
-        passwordData.newPassword
-      );
-      setMessage({ 
-        text: 'Password changed successfully!', 
-        type: 'success' 
-      });
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-      });
-    } catch (err) {
-      setMessage({ 
-        text: err.message || 'Failed to change password', 
-        type: 'error' 
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePhotoSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!uploadedImage) {
-      setMessage({ 
-        text: 'Please select an image to upload', 
-        type: 'error' 
-      });
-      return;
-    }
-    
-    setLoading(true);
-    
-    // This is a placeholder for actual photo upload functionality
-    // In a real implementation, you would upload to a server/cloud storage
-    setTimeout(() => {
-      try {
-        // Simulating successful upload
-        setMessage({ 
-          text: 'Profile photo updated successfully!', 
-          type: 'success' 
-        });
-        // In a real implementation, you would update the user's photoURL in the database
-      } catch (err) {
-        setMessage({ 
-          text: 'Failed to update profile photo', 
-          type: 'error' 
-        });
-      } finally {
-        setLoading(false);
-      }
-    }, 1500);
+    // Implementation here
   };
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
-      <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold mb-8">Account Settings</h1>
-        
-        {message.text && (
-          <div className={`mb-6 p-4 rounded-md ${
-            message.type === 'success' 
-              ? darkMode ? 'bg-green-800 text-green-100' : 'bg-green-100 text-green-800'
-              : darkMode ? 'bg-red-800 text-red-100' : 'bg-red-100 text-red-800'
-          }`}>
-            {message.text}
-          </div>
-        )}
-        
-        <div className={`rounded-lg shadow-md overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-          {/* Tabs */}
-          <div className="flex border-b border-gray-700">
-            <button
-              className={`px-6 py-3 text-sm font-medium ${
-                profileTab === 'general' 
-                  ? darkMode ? 'bg-gray-700 border-b-2 border-blue-500' : 'bg-gray-50 border-b-2 border-blue-500' 
-                  : ''
-              }`}
-              onClick={() => handleTabChange('general')}
+    <DashboardLayout>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="container mx-auto p-6"
+      >
+        <motion.h1
+          variants={itemVariants}
+          className="text-2xl font-bold mb-8 flex items-center gap-2"
+          style={{ color: colors.text }}
+        >
+          <span>Account Settings</span>
+          <span role="img" aria-label="settings">⚙️</span>
+        </motion.h1>
+
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          {/* Profile and Security Settings */}
+          <motion.div variants={itemVariants} className="md:col-span-8 space-y-6">
+            {/* Profile Settings */}
+            <div
+              className="rounded-xl shadow-md p-6"
+              style={{ backgroundColor: colors.cardBg, borderColor: colors.border }}
             >
-              General
-            </button>
-            <button
-              className={`px-6 py-3 text-sm font-medium ${
-                profileTab === 'password' 
-                  ? darkMode ? 'bg-gray-700 border-b-2 border-blue-500' : 'bg-gray-50 border-b-2 border-blue-500' 
-                  : ''
-              }`}
-              onClick={() => handleTabChange('password')}
-            >
-              Password
-            </button>
-            <button
-              className={`px-6 py-3 text-sm font-medium ${
-                profileTab === 'photo' 
-                  ? darkMode ? 'bg-gray-700 border-b-2 border-blue-500' : 'bg-gray-50 border-b-2 border-blue-500' 
-                  : ''
-              }`}
-              onClick={() => handleTabChange('photo')}
-            >
-              Profile Photo
-            </button>
-          </div>
-          
-          {/* General Settings */}
-          {profileTab === 'general' && (
-            <div className="p-6">
-              <form onSubmit={handleGeneralInfoSubmit}>
-                <div className="mb-6">
-                  <label htmlFor="name" className="block text-sm font-medium mb-2">
-                    Full Name
-                  </label>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    value={generalInfo.name}
-                    onChange={handleGeneralInfoChange}
-                    className={`w-full px-4 py-2 rounded-md ${
-                      darkMode 
-                        ? 'bg-gray-700 border-gray-600 text-white' 
-                        : 'bg-white border-gray-300 text-gray-900'
-                    } border focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                    required
+              <h2 className="text-xl font-semibold mb-6 flex items-center gap-2" style={{ color: colors.text }}>
+                <span>Profile Settings</span>
+                <span role="img" aria-label="profile">👤</span>
+              </h2>
+
+              <div className="flex items-center gap-6 mb-6">
+                <div className="relative">
+                  <motion.img
+                    whileHover={{ scale: 1.05 }}
+                    src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name}`}
+                    alt="Profile"
+                    className="w-24 h-24 rounded-full"
                   />
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="absolute -bottom-2 -right-2 p-2 rounded-full"
+                    style={{ backgroundColor: colors.primary }}
+                  >
+                    <span role="img" aria-label="camera">📸</span>
+                  </motion.button>
                 </div>
-                
-                <div className="mb-6">
-                  <label htmlFor="email" className="block text-sm font-medium mb-2">
-                    Email Address
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={generalInfo.email}
-                    onChange={handleGeneralInfoChange}
-                    className={`w-full px-4 py-2 rounded-md ${
-                      darkMode 
-                        ? 'bg-gray-700 border-gray-600 text-gray-400' 
-                        : 'bg-gray-100 border-gray-300 text-gray-500'
-                    } border focus:outline-none`}
-                    disabled
-                  />
-                  <p className={`mt-1 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    Email cannot be changed for security reasons
+
+                <div>
+                  <h3 className="text-lg font-medium mb-1" style={{ color: colors.text }}>
+                    {user?.name}
+                  </h3>
+                  <p style={{ color: colors.textSecondary }}>
+                    {user?.email}
                   </p>
                 </div>
-                
-                <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    className={`px-6 py-2 rounded-md font-medium ${
-                      darkMode 
-                        ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                        : 'bg-blue-600 hover:bg-blue-700 text-white'
-                    } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <div className="flex items-center">
-                        <div className="w-4 h-4 mr-2 border-t-2 border-b-2 border-white rounded-full animate-spin"></div>
-                        Saving...
-                      </div>
-                    ) : (
-                      'Save Changes'
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-          
-          {/* Password Settings */}
-          {profileTab === 'password' && (
-            <div className="p-6">
-              <form onSubmit={handlePasswordSubmit}>
-                <div className="mb-6">
-                  <label htmlFor="currentPassword" className="block text-sm font-medium mb-2">
-                    Current Password
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
+                    Display Name 📛
                   </label>
                   <input
-                    id="currentPassword"
-                    name="currentPassword"
+                    type="text"
+                    defaultValue={user?.name}
+                    className="w-full p-2 rounded-lg"
+                    style={{ backgroundColor: colors.surface, color: colors.text, border: `1px solid ${colors.border}` }}
+                  />
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full p-2 mt-4 rounded-lg flex items-center justify-center gap-2"
+                  style={{ backgroundColor: colors.primary, color: colors.background }}
+                >
+                  <span>Save Profile Changes</span>
+                  <span role="img" aria-label="save">💾</span>
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Security Settings */}
+            <div
+              className="rounded-xl shadow-md p-6"
+              style={{ backgroundColor: colors.cardBg, borderColor: colors.border }}
+            >
+              <h2 className="text-xl font-semibold mb-6 flex items-center gap-2" style={{ color: colors.text }}>
+                <span>Security</span>
+                <span role="img" aria-label="security">🔒</span>
+              </h2>
+
+              <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
+                    Current Password 🔑
+                  </label>
+                  <input
                     type="password"
                     value={passwordData.currentPassword}
-                    onChange={handlePasswordChange}
-                    className={`w-full px-4 py-2 rounded-md ${
-                      darkMode 
-                        ? 'bg-gray-700 border-gray-600 text-white' 
-                        : 'bg-white border-gray-300 text-gray-900'
-                    } border focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                    required
+                    onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                    className="w-full p-2 rounded-lg"
+                    style={{ backgroundColor: colors.surface, color: colors.text, border: `1px solid ${colors.border}` }}
                   />
                 </div>
-                
-                <div className="mb-6">
-                  <label htmlFor="newPassword" className="block text-sm font-medium mb-2">
-                    New Password
+
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
+                    New Password 🆕
                   </label>
                   <input
-                    id="newPassword"
-                    name="newPassword"
                     type="password"
                     value={passwordData.newPassword}
-                    onChange={handlePasswordChange}
-                    className={`w-full px-4 py-2 rounded-md ${
-                      darkMode 
-                        ? 'bg-gray-700 border-gray-600 text-white' 
-                        : 'bg-white border-gray-300 text-gray-900'
-                    } border focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                    required
-                    minLength={8}
+                    onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                    className="w-full p-2 rounded-lg"
+                    style={{ backgroundColor: colors.surface, color: colors.text, border: `1px solid ${colors.border}` }}
                   />
-                  <p className={`mt-1 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    Password must be at least 8 characters long
-                  </p>
                 </div>
-                
-                <div className="mb-6">
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">
-                    Confirm New Password
+
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
+                    Confirm Password ✅
                   </label>
                   <input
-                    id="confirmPassword"
-                    name="confirmPassword"
                     type="password"
                     value={passwordData.confirmPassword}
-                    onChange={handlePasswordChange}
-                    className={`w-full px-4 py-2 rounded-md ${
-                      darkMode 
-                        ? 'bg-gray-700 border-gray-600 text-white' 
-                        : 'bg-white border-gray-300 text-gray-900'
-                    } border focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                    required
+                    onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                    className="w-full p-2 rounded-lg"
+                    style={{ backgroundColor: colors.surface, color: colors.text, border: `1px solid ${colors.border}` }}
                   />
                 </div>
-                
-                <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    className={`px-6 py-2 rounded-md font-medium ${
-                      darkMode 
-                        ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                        : 'bg-blue-600 hover:bg-blue-700 text-white'
-                    } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
-                    disabled={loading}
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="submit"
+                  className="w-full p-2 rounded-lg flex items-center justify-center gap-2"
+                  style={{ backgroundColor: colors.primary, color: colors.background }}
+                >
+                  <span>Update Password</span>
+                  <span role="img" aria-label="key">🔐</span>
+                </motion.button>
+              </form>
+            </div>
+          </motion.div>
+
+          {/* Preferences Column */}
+          <motion.div variants={itemVariants} className="md:col-span-4 space-y-6">
+            {/* Theme Settings */}
+            <div
+              className="rounded-xl shadow-md p-6"
+              style={{ backgroundColor: colors.cardBg, borderColor: colors.border }}
+            >
+              <h2 className="text-xl font-semibold mb-6 flex items-center gap-2" style={{ color: colors.text }}>
+                <span>Appearance</span>
+                <span role="img" aria-label="theme">✨</span>
+              </h2>
+
+              <button
+                onClick={toggleTheme}
+                className="w-full p-4 rounded-lg flex items-center justify-between"
+                style={{ backgroundColor: colors.surface, border: `1px solid ${colors.border}` }}
+              >
+                <span style={{ color: colors.text }} className="flex items-center gap-2">
+                  <span>{darkMode ? 'Dark Mode' : 'Light Mode'}</span>
+                  <span role="img" aria-label="mode">{darkMode ? '🌙' : '☀️'}</span>
+                </span>
+                <motion.div
+                  initial={false}
+                  animate={{
+                    backgroundColor: darkMode ? colors.primary : colors.background,
+                    justifyContent: darkMode ? 'flex-end' : 'flex-start'
+                  }}
+                  className="w-12 h-6 rounded-full p-1 flex"
+                  style={{ border: `1px solid ${colors.border}` }}
+                >
+                  <motion.div
+                    className="w-4 h-4 rounded-full"
+                    style={{ backgroundColor: darkMode ? colors.background : colors.primary }}
+                  />
+                </motion.div>
+              </button>
+            </div>
+
+            {/* Sign Out */}
+            <div
+              className="rounded-xl shadow-md p-6"
+              style={{ backgroundColor: colors.cardBg, borderColor: colors.border }}
+            >
+              <h2 className="text-xl font-semibold mb-6 flex items-center gap-2" style={{ color: colors.text }}>
+                <span>Sign Out</span>
+                <span role="img" aria-label="sign-out">🚪</span>
+              </h2>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={async () => {
+                  try {
+                    await logout();
+                    setShowLogoutMessage(true);
+                    setTimeout(() => {
+                      navigate('/login');
+                    }, 1500);
+                  } catch (error) {
+                    console.error('Error signing out:', error);
+                  }
+                }}
+                className="w-full p-4 rounded-lg flex items-center justify-between"
+                style={{ backgroundColor: colors.surface, border: `1px solid ${colors.border}`, color: '#ef4444' }}
+              >
+                <span className="flex items-center gap-2">
+                  <span>Sign Out</span>
+                  <span role="img" aria-label="sign-out">🔓</span>
+                </span>
+              </motion.button>
+              {showLogoutMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4 p-2 rounded text-center"
+                  style={{ backgroundColor: colors.surface }}
+                >
+                  <span style={{ color: colors.text }}>Signing out...</span>
+                </motion.div>
+              )}
+            </div>
+
+            {/* Notification Settings */}
+            <div
+              className="rounded-xl shadow-md p-6"
+              style={{ backgroundColor: colors.cardBg, borderColor: colors.border }}
+            >
+              <h2 className="text-xl font-semibold mb-6 flex items-center gap-2" style={{ color: colors.text }}>
+                <span>Notifications</span>
+                <span role="img" aria-label="notifications">🔔</span>
+              </h2>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span style={{ color: colors.text }} className="flex items-center gap-2">
+                    <span>Push Notifications</span>
+                    <span role="img" aria-label="mobile">📱</span>
+                  </span>
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      backgroundColor: notificationsEnabled ? colors.primary : colors.background,
+                      justifyContent: notificationsEnabled ? 'flex-end' : 'flex-start'
+                    }}
+                    onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+                    className="w-12 h-6 rounded-full p-1 flex cursor-pointer"
+                    style={{ border: `1px solid ${colors.border}` }}
                   >
-                    {loading ? (
-                      <div className="flex items-center">
-                        <div className="w-4 h-4 mr-2 border-t-2 border-b-2 border-white rounded-full animate-spin"></div>
-                        Changing Password...
-                      </div>
-                    ) : (
-                      'Change Password'
-                    )}
-                  </button>
+                    <motion.div
+                      className="w-4 h-4 rounded-full"
+                      style={{ backgroundColor: notificationsEnabled ? colors.background : colors.primary }}
+                    />
+                  </motion.div>
                 </div>
-              </form>
-            </div>
-          )}
-          
-          {/* Profile Photo */}
-          {profileTab === 'photo' && (
-            <div className="p-6">
-              <form onSubmit={handlePhotoSubmit}>
-                <div className="flex flex-col md:flex-row">
-                  <div className="md:w-1/3 mb-6 md:mb-0">
-                    <div className="w-48 h-48 mx-auto rounded-full overflow-hidden border-4 border-blue-500">
-                      <img
-                        src={photoURL}
-                        alt="Profile"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="md:w-2/3 md:pl-8">
-                    <div className="mb-6">
-                      <label className="block text-sm font-medium mb-2">
-                        Upload New Photo
-                      </label>
-                      <input
-                        id="photo"
-                        name="photo"
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhotoChange}
-                        className={`block w-full text-sm ${
-                          darkMode 
-                            ? 'text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-gray-700 file:text-white'
-                            : 'text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700'
-                        }`}
-                      />
-                      <p className={`mt-1 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                        PNG, JPG or GIF up to 5MB
-                      </p>
-                    </div>
-                    
-                    <div className="flex justify-end">
-                      <button
-                        type="submit"
-                        className={`px-6 py-2 rounded-md font-medium ${
-                          darkMode 
-                            ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                            : 'bg-blue-600 hover:bg-blue-700 text-white'
-                        } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
-                        disabled={loading || !uploadedImage}
-                      >
-                        {loading ? (
-                          <div className="flex items-center">
-                            <div className="w-4 h-4 mr-2 border-t-2 border-b-2 border-white rounded-full animate-spin"></div>
-                            Uploading...
-                          </div>
-                        ) : (
-                          'Update Photo'
-                        )}
-                      </button>
-                    </div>
-                  </div>
+
+                <div className="flex items-center justify-between">
+                  <span style={{ color: colors.text }} className="flex items-center gap-2">
+                    <span>Email Updates</span>
+                    <span role="img" aria-label="email">📧</span>
+                  </span>
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      backgroundColor: emailNotifications ? colors.primary : colors.background,
+                      justifyContent: emailNotifications ? 'flex-end' : 'flex-start'
+                    }}
+                    onClick={() => setEmailNotifications(!emailNotifications)}
+                    className="w-12 h-6 rounded-full p-1 flex cursor-pointer"
+                    style={{ border: `1px solid ${colors.border}` }}
+                  >
+                    <motion.div
+                      className="w-4 h-4 rounded-full"
+                      style={{ backgroundColor: emailNotifications ? colors.background : colors.primary }}
+                    />
+                  </motion.div>
                 </div>
-              </form>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full p-2 mt-4 rounded-lg flex items-center justify-center gap-2"
+                  style={{ backgroundColor: colors.primary, color: colors.background }}
+                >
+                  <span>Save Preferences</span>
+                  <span role="img" aria-label="save">💾</span>
+                </motion.button>
+              </div>
             </div>
-          )}
+          </motion.div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </DashboardLayout>
   );
 };
 

@@ -2,10 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { RiRoadMapLine, RiQuestionAnswerLine, RiTeamLine } from 'react-icons/ri';
-import { FiCheckCircle, FiMessageSquare, FiArrowLeft } from 'react-icons/fi';
+import { FiCheckCircle, FiMessageSquare } from 'react-icons/fi';
+import { useTheme } from '../context/ThemeContext';
+import BackButton from '../components/BackButton';
 import { BsRobot, BsClipboardCheck } from 'react-icons/bs';
 
 const Features = () => {
+  const { darkMode } = useTheme();
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -70,17 +73,10 @@ const Features = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white py-16">
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'} py-16`}>
       <div className="container mx-auto px-4">
         {/* Back button */}
-        <div className="mb-10">
-          <Link 
-            to="/" 
-            className="inline-flex items-center text-gray-300 hover:text-white transition-colors"
-          >
-            <FiArrowLeft className="mr-2" /> Back to Home
-          </Link>
-        </div>
+        <BackButton />
         
         {/* Header */}
         <motion.div 

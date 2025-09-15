@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { motion } from 'framer-motion';
-import { FiMoon, FiSun } from 'react-icons/fi';
+import { useSidebar } from '../context/SidebarContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiMoon, FiSun, FiX, FiMenu } from 'react-icons/fi';
+import Logo from './Logo';
 
 const Navbar = () => {
   const { darkMode, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
+  const { isExpanded } = useSidebar();
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -55,50 +58,55 @@ const Navbar = () => {
   const isHomePage = location.pathname === '/';
 
   return (
-    <nav className={`border-b ${
+    <nav 
+      style={{
+        right: 0,
+        left: isExpanded ? '240px' : '80px',
+      }}
+      className={`fixed top-0 h-16 border-b z-20 transition-all duration-300 ease-in-out ${
       darkMode 
-        ? 'bg-gray-900 border-gray-700' 
-        : 'bg-white border-gray-200'
-    } px-4 py-2.5 lg:px-6`}>
-      <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
-        <Link to="/" className="flex items-center">
-          <span className={`self-center text-xl font-semibold whitespace-nowrap ${
-            darkMode ? 'text-white' : 'text-black'
+        ? 'bg-slate-800/95 border-slate-700 backdrop-blur-sm' 
+        : 'bg-white/95 border-slate-200 backdrop-blur-sm'
+    } px-4`}>
+      <div className="flex h-full justify-between items-center max-w-screen-2xl mx-auto">
+        <div className="flex items-center gap-4">
+          <h1 className={`text-lg font-semibold ${
+            darkMode ? 'text-slate-100' : 'text-slate-800'
           }`}>
-            CrackIt.AI
-          </span>
-        </Link>
+            {location.pathname === '/' ? 'Home' :
+             location.pathname === '/features' ? 'Features' :
+             location.pathname === '/dashboard' ? 'Dashboard' :
+             location.pathname === '/roadmap' ? 'Roadmap' :
+             location.pathname === '/checklist' ? 'Checklist' :
+             location.pathname === '/chat' ? 'Chatrooms' :
+             location.pathname === '/settings' ? 'Settings' : ''}
+          </h1>
+        </div>
         
-        <div className={`hidden justify-between items-center w-full md:flex md:w-auto md:order-1`} id="desktop-menu">
-          <ul className={`flex flex-row font-medium space-x-8 ${
-            darkMode ? 'text-gray-200' : 'text-gray-700'
+        <div className="hidden md:flex items-center space-x-6">
+          <ul className={`flex items-center gap-4 font-medium ${
+            darkMode ? 'text-slate-300' : 'text-slate-600'
           }`}>
             <li>
-              <Link to="/" className={`block py-2 px-3 ${
-                location.pathname === '/' ? 'text-yellow-400' : ''
-              } hover:text-yellow-400`}>
+              <Link to="/" className={`py-2 px-3 rounded-lg transition-colors ${
+                location.pathname === '/' 
+                  ? darkMode 
+                    ? 'bg-indigo-500/10 text-indigo-400' 
+                    : 'bg-indigo-50 text-indigo-600'
+                  : 'hover:text-indigo-500'
+              }`}>
                 Home
               </Link>
             </li>
             <li>
-              <Link to="/catalog" className={`block py-2 px-3 ${
-                location.pathname === '/catalog' ? 'text-yellow-400' : ''
-              } hover:text-yellow-400`}>
-                Catalog
-              </Link>
-            </li>
-            <li>
-              <Link to="/about" className={`block py-2 px-3 ${
-                location.pathname === '/about' ? 'text-yellow-400' : ''
-              } hover:text-yellow-400`}>
-                About Us
-              </Link>
-            </li>
-            <li>
-              <Link to="/contact" className={`block py-2 px-3 ${
-                location.pathname === '/contact' ? 'text-yellow-400' : ''
-              } hover:text-yellow-400`}>
-                Contact Us
+              <Link to="/features" className={`py-2 px-3 rounded-lg transition-colors ${
+                location.pathname === '/features'
+                  ? darkMode
+                    ? 'bg-indigo-500/10 text-indigo-400'
+                    : 'bg-indigo-50 text-indigo-600'
+                  : 'hover:text-indigo-500'
+              }`}>
+                Features
               </Link>
             </li>
           </ul>
@@ -107,12 +115,12 @@ const Navbar = () => {
         <div className="flex items-center md:order-2 space-x-3">
           <motion.button 
             onClick={toggleTheme}
-            className={`p-2 rounded-lg flex items-center justify-center ${
+            className={`p-2 rounded-lg flex items-center justify-center transition-colors ${
               darkMode
-                ? 'text-amber-300 hover:bg-gray-700' 
-                : 'text-indigo-600 hover:bg-gray-200'
+                ? 'text-indigo-400 hover:bg-slate-700' 
+                : 'text-indigo-600 hover:bg-slate-100'
             }`}
-            whileHover={{ scale: 1.1 }}
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             aria-label="Toggle Dark Mode"
           >
@@ -125,57 +133,78 @@ const Navbar = () => {
           
           {user ? (
             <div className="relative">
-              <button 
+              <motion.button 
                 type="button" 
-                className="flex items-center space-x-2 focus:outline-none" 
+                className={`flex items-center gap-3 px-3 py-1.5 rounded-lg focus:outline-none transition-colors ${
+                  darkMode 
+                    ? 'hover:bg-slate-700' 
+                    : 'hover:bg-slate-100'
+                }`}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 id="user-menu-button"
                 onClick={toggleUserMenu}
                 aria-expanded={userMenuOpen ? "true" : "false"}
               >
-                <span className={`hidden md:block ${
-                  darkMode ? 'text-white' : 'text-gray-800'
+                <span className={`hidden md:block font-medium ${
+                  darkMode ? 'text-slate-200' : 'text-slate-700'
                 }`}>
                   {user.name}
                 </span>
                 <img 
-                  className="h-8 w-8 rounded-full border-2 border-yellow-400" 
-                  src="https://placehold.co/200x200/1e40af/ffffff?text=User"
-                  alt="User" 
+                  className="h-8 w-8 rounded-lg shadow-md" 
+                  src={user?.avatar || 'https://ui-avatars.com/api/?name=' + user?.name}
+                  alt={user?.name} 
                 />
-              </button>
+              </motion.button>
               
-              {userMenuOpen && (
-                <div className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg ${
-                  darkMode ? 'bg-gray-800 ring-1 ring-gray-700' : 'bg-white ring-1 ring-black ring-opacity-5'
-                }`}>
-                  <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
-                    <Link 
-                      to="/dashboard" 
-                      className={`block px-4 py-2 text-sm ${
-                        darkMode ? 'text-gray-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                      }`}
-                    >
-                      Dashboard
-                    </Link>
-                    <Link 
-                      to="/settings" 
-                      className={`block px-4 py-2 text-sm ${
-                        darkMode ? 'text-gray-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                      }`}
-                    >
-                      Settings
-                    </Link>
-                    <button 
-                      onClick={logout}
-                      className={`block w-full text-left px-4 py-2 text-sm ${
-                        darkMode ? 'text-gray-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                      }`}
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-              )}
+              <AnimatePresence>
+                {userMenuOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 5 }}
+                    className={`absolute right-0 mt-2 w-48 rounded-xl overflow-hidden border shadow-lg ${
+                      darkMode 
+                        ? 'bg-slate-800 border-slate-700' 
+                        : 'bg-white border-slate-200'
+                    }`}
+                  >
+                    <div className="py-1" role="menu">
+                      <Link 
+                        to="/dashboard" 
+                        className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                          darkMode 
+                            ? 'text-slate-200 hover:bg-slate-700/50' 
+                            : 'text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        Dashboard
+                      </Link>
+                      <Link 
+                        to="/settings" 
+                        className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                          darkMode 
+                            ? 'text-slate-200 hover:bg-slate-700/50' 
+                            : 'text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        Settings
+                      </Link>
+                      <button 
+                        onClick={logout}
+                        className={`flex items-center gap-2 w-full text-left px-4 py-2 text-sm font-medium transition-colors ${
+                          darkMode 
+                            ? 'text-red-400 hover:bg-slate-700/50' 
+                            : 'text-red-600 hover:bg-slate-50'
+                        }`}
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           ) : (
             <>
@@ -213,13 +242,12 @@ const Navbar = () => {
             aria-controls="mobile-menu"
             aria-expanded={menuOpen ? "true" : "false"}
           >
-            <span className="sr-only">Open main menu</span>
-            <svg className={`${menuOpen ? 'hidden' : 'block'} w-6 h-6`} fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-              <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd"></path>
-            </svg>
-            <svg className={`${menuOpen ? 'block' : 'hidden'} w-6 h-6`} fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"></path>
-            </svg>
+            <span className="sr-only">Toggle menu</span>
+            {menuOpen ? (
+              <FiX className="w-6 h-6" />
+            ) : (
+              <FiMenu className="w-6 h-6" />
+            )}
           </button>
         </div>
         
@@ -244,35 +272,13 @@ const Navbar = () => {
             </li>
             <li>
               <Link 
-                to="/catalog" 
+                to="/features" 
                 className={`block py-2 px-3 rounded ${
                   darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
-                } ${location.pathname === '/catalog' ? 'text-yellow-400' : ''}`}
+                } ${location.pathname === '/features' ? 'text-yellow-400' : ''}`}
                 onClick={() => setMenuOpen(false)}
               >
-                Catalog
-              </Link>
-            </li>
-            <li>
-              <Link 
-                to="/about" 
-                className={`block py-2 px-3 rounded ${
-                  darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
-                } ${location.pathname === '/about' ? 'text-yellow-400' : ''}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                About Us
-              </Link>
-            </li>
-            <li>
-              <Link 
-                to="/contact" 
-                className={`block py-2 px-3 rounded ${
-                  darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
-                } ${location.pathname === '/contact' ? 'text-yellow-400' : ''}`}
-                onClick={() => setMenuOpen(false)}
-              >
-                Contact Us
+                Features
               </Link>
             </li>
             {user && (

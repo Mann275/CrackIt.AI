@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import { FiArrowRight, FiFeather } from 'react-icons/fi';
 import { RiRobot2Line } from 'react-icons/ri';
@@ -46,7 +47,7 @@ const Home = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gray-900 text-white font-sans">
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} ${darkMode ? 'text-white' : 'text-gray-900'} font-sans`}>
       {/* Logo in top-left corner */}
       <div className="absolute top-5 left-5 z-50">
         <motion.div
@@ -188,9 +189,9 @@ const Home = () => {
               <div className="text-indigo-400 text-4xl mb-4">
                 <i className="fas fa-file-alt"></i>
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-white">Mock Tests with AI Feedback</h3>
+              <h3 className="text-xl font-semibold mb-3 text-white">AI Roadmap Generator</h3>
               <p className="text-gray-300">
-                Company-specific mock interviews with intelligent AI feedback to prepare you for actual interviews.
+                Get a personalized learning path with recommended resources and progress tracking.
               </p>
             </motion.div>
             <motion.div 
@@ -317,7 +318,7 @@ const Home = () => {
                   </div>
                 </div>
                 <p className="text-gray-300 italic mb-4 flex-grow text-sm">
-                  "The company-specific QnA vault was invaluable. I was asked almost the same questions in my actual interview that I had practiced on CrackIt.AI."
+                  "The AI roadmap helped me structure my learning journey. I was able to focus on the right topics at the right time."
                 </p>
                 <div className="mt-auto">
                   <div className="flex items-center">
@@ -381,7 +382,7 @@ const Home = () => {
                   </div>
                 </div>
                 <p className="text-gray-300 italic mb-4 flex-grow text-sm">
-                  "The AI-generated mock tests were exactly what I needed to prepare for my technical interviews. I got hired within 3 months of using CrackIt.AI!"
+                  "The company-specific chat rooms helped me connect with others preparing for the same company. The community support was invaluable!"
                 </p>
                 <div className="mt-auto">
                   <div className="flex items-center">

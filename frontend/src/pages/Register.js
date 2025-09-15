@@ -7,6 +7,7 @@ import { FiMail, FiLock, FiEye, FiEyeOff, FiUser, FiCheck, FiMoon, FiSun } from 
 import { RiRobot2Line } from 'react-icons/ri';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import BackButton from '../components/BackButton';
 
 const Register = () => {
   const { darkMode } = useTheme();
@@ -182,6 +183,7 @@ const Register = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <BackButton />
       {/* Background decorative elements */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMyMjIiIGZpbGwtb3BhY2l0eT0iLjA1Ij48cGF0aCBkPSJNMzAgMHYzMGgzMHYzMGgtMzB2LTMwaC0zMFYwaDMweiIvPjwvZz48L2c+PC9zdmc+')] opacity-10"></div>
       

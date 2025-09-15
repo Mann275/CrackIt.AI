@@ -16,28 +16,76 @@ const io = socketIo(server, {
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const roadmapRoutes = require('./routes/roadmapRoutes');
-const testRoutes = require('./routes/testRoutes');
+const checklistRoutes = require('./routes/checklistRoutes');
+const goalRoutes = require('./routes/goalRoutes');
+const skillSurveyRoutes = require('./routes/skillSurveyRoutes');
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: ['http://localhost:3000', 'http://localhost:3001'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  exposedHeaders: ['Authorization'],
+  maxAge: 600 // Cache preflight requests for 10 minutes
 }));
 app.use(express.json());
 
-// Database Connection
-mongoose.connect('mongodb://localhost:27017/crackit-ai', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+
+  // Handle different types of errors
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({
+      success: false,
+      message: 'Validation Error',
+      error: Object.values(err.errors).map(e => e.message).join(', ')
+    });
+  }
+
+  if (err.name === 'MongoError' || err.name === 'MongoServerError') {
+    if (err.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: 'Duplicate Entry Error',
+        error: 'A resource with these details already exists'
+      });
+    }
+  }
+
+  if (err.name === 'TokenExpiredError' || err.name === 'JsonWebTokenError') {
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication Error',
+      error: 'Invalid or expired token'
+    });
+  }
+
+  // Default error response
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || 'Internal Server Error',
+    error: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
 });
 
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', () => {
-  console.log('Connected to MongoDB');
-});
+// Database Connection
+mongoose.set('strictQuery', false); // Add this line to handle the deprecation warning
+const connectDB = async () => {
+  try {
+    await mongoose.connect('mongodb://localhost:27017/crackit-ai', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('Connected to MongoDB successfully');
+  } catch (err) {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  }
+};
+
+connectDB();
 
 // Routes
 app.get('/', (req, res) => {
@@ -58,7 +106,9 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/roadmap', roadmapRoutes);
-app.use('/api/tests', testRoutes);
+app.use('/api/checklist', checklistRoutes);
+app.use('/api/goals', goalRoutes);
+app.use('/api/survey', skillSurveyRoutes);
 
 // Socket.io connection for chat
 const { Chatroom, ChatMessage } = require('./models/Chat');

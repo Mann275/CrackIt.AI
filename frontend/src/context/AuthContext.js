@@ -16,14 +16,27 @@ export const AuthProvider = ({ children }) => {
           // Verify token with backend
           const response = await fetch('http://localhost:5001/api/auth/verify', {
             headers: {
-              Authorization: `Bearer ${token}`
-            }
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/json'
+            },
+            credentials: 'include'
+          }).catch(err => {
+            console.error('Network error during token verification:', err);
+            throw new Error('Unable to connect to the server');
           });
           
-          if (response.ok) {
-            const userData = await response.json();
+          let userData;
+          try {
+            userData = await response.json();
+          } catch (err) {
+            console.error('Error parsing verify response:', err);
+            throw new Error('Invalid response from server');
+          }
+
+          if (response.ok && userData.user) {
             setUser(userData.user);
           } else {
+            console.error('Token verification failed:', userData);
             // Token invalid, clear localStorage
             localStorage.removeItem('token');
             setUser(null);
@@ -53,12 +66,23 @@ export const AuthProvider = ({ children }) => {
       const response = await fetch('http://localhost:5001/api/auth/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
+        credentials: 'include'
+      }).catch(err => {
+        console.error('Network error during login:', err);
+        throw new Error('Unable to connect to the server. Please check your internet connection.');
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (err) {
+        console.error('Error parsing login response:', err);
+        throw new Error('Invalid response from server. Please try again.');
+      }
       
       if (!response.ok) {
         console.error('Login failed:', data);
@@ -86,12 +110,23 @@ export const AuthProvider = ({ children }) => {
       const response = await fetch('http://localhost:5001/api/auth/register', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
-        body: JSON.stringify(userData)
+        body: JSON.stringify(userData),
+        credentials: 'include'
+      }).catch(err => {
+        console.error('Network error during registration:', err);
+        throw new Error('Unable to connect to the server. Please check your internet connection.');
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (err) {
+        console.error('Error parsing registration response:', err);
+        throw new Error('Invalid response from server. Please try again.');
+      }
       
       if (!response.ok) {
         console.error('Registration failed:', data);

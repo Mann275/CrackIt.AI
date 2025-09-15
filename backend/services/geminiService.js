@@ -1,8 +1,12 @@
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const axios = require('axios');
 
 // Gemini API configuration
-const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"; // Replace with the provided API key
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyAuQSPonqWljt4ck58NVqokpRlYQDTrEHg";
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+
+// Initialize Gemini AI
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 /**
  * Generate content using Gemini AI API
@@ -46,248 +50,243 @@ const generateContent = async (prompt) => {
  */
 const generateRoadmap = async (userData) => {
   try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+
     const prompt = `
-You are an AI placement mentor.
-Based on this user profile:
-- Target Company: ${userData.targetCompanies.join(', ')}
-- Domain: ${userData.preferredDomain}
-- Expected LPA: ${userData.expectedLPA}
-- Current Skills:
-  * DSA Skills:
-    - Arrays: ${userData.skills.dsaSkills.arrays}/10
-    - Linked Lists: ${userData.skills.dsaSkills.linkedLists}/10
-    - Stacks: ${userData.skills.dsaSkills.stacks}/10
-    - Queues: ${userData.skills.dsaSkills.queues}/10
-    - Trees: ${userData.skills.dsaSkills.trees}/10
-    - Graphs: ${userData.skills.dsaSkills.graphs}/10
-    - DP: ${userData.skills.dsaSkills.dp}/10
-    - Recursion: ${userData.skills.dsaSkills.recursion}/10
-    - Searching: ${userData.skills.dsaSkills.searching}/10
-    - Sorting: ${userData.skills.dsaSkills.sorting}/10
-  * Core CS Skills:
-    - DBMS: ${userData.skills.coreCSSkills.dbms}/10
-    - OS: ${userData.skills.coreCSSkills.os}/10
-    - Computer Networks: ${userData.skills.coreCSSkills.cn}/10
-    - OOP: ${userData.skills.coreCSSkills.oops}/10
-  * Development Experience:
-    - Web: ${userData.skills.devExperience.web}/10
-    - App: ${userData.skills.devExperience.app}/10
-    - ML: ${userData.skills.devExperience.ml}/10
-    - Cloud: ${userData.skills.devExperience.cloud}/10
-    - Tech Stack: ${userData.techStack.join(', ')}
+You are an AI placement mentor and technical coach.
+Based on this user profile for ${userData.userName || 'the user'}:
+- Target Companies: ${userData.targetCompanies?.join(', ') || userData.targetCompany || 'Not specified'}
+- Domain: ${userData.preferredDomain || userData.domain || 'Not specified'}
+- Experience Level: ${userData.experience || 'Not specified'}
+- Current Skills: ${JSON.stringify(userData.skills, null, 2)}
+- Expected LPA: ${userData.expectedLPA || 'Not specified'}
 
-Generate a personalized placement roadmap in JSON format with:
-1. Ordered topics to study (DSA, Core CS, Development) based on weakness areas.
-2. Suggested timeline (weekly goals) for the next 12 weeks.
-3. Checklist structure for each week (array of objects with 'task' and 'completed' properties).
-4. Readiness percentage estimation for the target companies.
+Generate a detailed, structured learning roadmap that will help them prepare for technical interviews.
+Focus on creating a progressive learning path that builds from fundamentals to advanced topics.
 
-Respond ONLY with valid JSON in the following format:
+Return the response as valid JSON matching this structure:
 {
   "roadmap": {
-    "readinessPercentage": number,
-    "focusAreas": ["string", "string", ...],
-    "weakAreas": ["string", "string", ...],
+    "topics": [
+      {
+        "id": "string",
+        "title": "string",
+        "description": "string",
+        "timeEstimate": "string",
+        "difficulty": "beginner|intermediate|advanced",
+        "subtopics": [
+          {
+            "id": "string",
+            "title": "string",
+            "description": "string",
+            "resources": [
+              {
+                "type": "video|article|tutorial|documentation|practice",
+                "title": "string",
+                "url": "string",
+                "description": "string"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "overview": {
+      "readinessScore": number,
+      "focusAreas": ["string"],
+      "weakAreas": ["string"],
+      "estimatedTimeToCompletion": "string"
+    },
     "weeklyPlan": [
       {
         "week": number,
         "theme": "string",
-        "goals": ["string", "string", ...]
-      },
-      ...
-    ],
-    "checklist": [
-      {
-        "id": "string",
-        "task": "string",
-        "completed": boolean,
-        "category": "string"
-      },
-      ...
+        "goals": ["string"],
+        "topicsToFocus": ["string"],
+        "estimatedHours": number
+      }
     ]
   }
-}
-`;
+}`;
 
-    const response = await generateContent(prompt);
-    
-    // Extract JSON from response
-    const textContent = response.candidates[0].content.parts[0].text;
-    const jsonMatch = textContent.match(/(\{[\s\S]*\})/);
-    
-    if (jsonMatch) {
-      try {
-        const roadmapJson = JSON.parse(jsonMatch[0]);
-        return roadmapJson;
-      } catch (parseError) {
-        console.error('Error parsing Gemini response as JSON:', parseError);
-        throw new Error('Failed to parse Gemini response as JSON');
-      }
-    } else {
-      throw new Error('No valid JSON found in Gemini response');
-    }
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    return JSON.parse(text);
   } catch (error) {
-    console.error('Roadmap generation error:', error);
+    console.error('Error generating roadmap:', error);
     throw error;
   }
 };
 
+
+
 /**
- * Generate mock test questions based on topic
- * @param {string} topic - Topic for which to generate questions
- * @param {number} questionCount - Number of questions to generate (default: 10)
- * @returns {Promise<Array>} - Array of questions with options and answers
+ * Get next milestones and recommendations based on current roadmap progress
+ * @param {Object} roadmap - Current roadmap with progress
+ * @returns {Promise<Object>} - Next milestones and recommendations
  */
-const generateMockTest = async (topic, questionCount = 10) => {
+const getNextMilestones = async (roadmap) => {
   try {
     const prompt = `
-Generate ${questionCount} multiple-choice technical questions for placement preparation.
-Focus on ${topic}.
-Return output in JSON format with:
-- question
-- options (a,b,c,d)
-- correct_answer
-- explanation
+You are an AI career mentor tracking a student's interview preparation progress.
 
-Respond ONLY with valid JSON in the following format:
+Current Progress:
+- Completed Topics: ${roadmap.progress.completedTopics.join(', ')}
+- Current Readiness: ${roadmap.progress.readinessScore}%
+- Weak Areas: ${roadmap.overview.weakAreas.join(', ')}
+- Weekly Progress: ${JSON.stringify(roadmap.weeklyPlan, null, 2)}
+
+Analyze their progress and provide:
+1. Next 3-5 key milestones they should focus on
+2. Specific tips for their weak areas
+3. Estimated timeline for each milestone
+
+Return as JSON:
 {
-  "questions": [
+  "nextMilestones": [
     {
-      "id": "string",
-      "question": "string",
-      "options": {
-        "a": "string",
-        "b": "string",
-        "c": "string",
-        "d": "string"
-      },
-      "correctAnswer": "string",
-      "explanation": "string",
-      "topic": "string"
-    },
-    ...
-  ]
+      "title": "string",
+      "description": "string",
+      "estimatedTime": "string",
+      "priority": "high|medium|low"
+    }
+  ],
+  "recommendations": {
+    "weakAreaTips": [
+      {
+        "area": "string",
+        "tips": ["string"]
+      }
+    ],
+    "generalAdvice": "string"
+  }
 }
 `;
 
     const response = await generateContent(prompt);
-    
-    // Extract JSON from response
     const textContent = response.candidates[0].content.parts[0].text;
     const jsonMatch = textContent.match(/(\{[\s\S]*\})/);
-    
-    if (jsonMatch) {
-      try {
-        const questionsJson = JSON.parse(jsonMatch[0]);
-        return questionsJson;
-      } catch (parseError) {
-        console.error('Error parsing Gemini response as JSON:', parseError);
-        throw new Error('Failed to parse Gemini response as JSON');
-      }
-    } else {
-      throw new Error('No valid JSON found in Gemini response');
-    }
+    return JSON.parse(jsonMatch[0]);
   } catch (error) {
-    console.error('Mock test generation error:', error);
+    console.error('Get next milestones error:', error);
     throw error;
   }
 };
 
 /**
- * Generate test result analysis and feedback
- * @param {Object} testData - Test results data
- * @param {string} company - Target company
- * @returns {Promise<Object>} - Analysis and feedback
+ * Get progress-based recommendations and updated readiness score
+ * @param {Object} data - Current progress data
+ * @returns {Promise<Object>} - Recommendations and updated score
  */
-const analyzeTestResults = async (testData, company) => {
+const getProgressRecommendations = async (data) => {
   try {
-    // Prepare the test data in a structured format
-    const userAnswers = testData.answers.map(a => {
-      const topicInfo = a.topic ? ` (Topic: ${a.topic})` : '';
-      return `Q${a.questionId}${topicInfo}: User answered "${a.userAnswer}", Correct answer: "${a.correctAnswer}"`;
-    }).join('\n');
-    
-    // Group questions by topic for better analysis
-    const topicCounts = {};
-    const topicResults = {};
-    
-    testData.answers.forEach(answer => {
-      const topic = answer.topic || testData.topic;
-      const isCorrect = answer.userAnswer === answer.correctAnswer;
-      
-      if (!topicCounts[topic]) {
-        topicCounts[topic] = { total: 0, correct: 0 };
-      }
-      
-      topicCounts[topic].total++;
-      if (isCorrect) topicCounts[topic].correct++;
-    });
-    
-    // Calculate performance by topic
-    Object.keys(topicCounts).forEach(topic => {
-      const accuracy = (topicCounts[topic].correct / topicCounts[topic].total) * 100;
-      topicResults[topic] = {
-        accuracy: Math.round(accuracy),
-        questions: topicCounts[topic].total,
-        correct: topicCounts[topic].correct
-      };
-    });
-    
-    const topicAnalysis = Object.entries(topicResults)
-      .map(([topic, data]) => `${topic}: ${data.correct}/${data.questions} correct (${data.accuracy}%)`)
-      .join('\n');
-    
     const prompt = `
-You are an expert technical interviewer and mentor.
+You are an AI interview preparation coach.
 
-Analyze the following coding test results:
-- Test topic: ${testData.topic}
-- Overall score: ${testData.score}%
-- Total questions: ${testData.totalQuestions}
+Current Status:
+- Topics: ${JSON.stringify(data.topics, null, 2)}
+- Completed Topics: ${data.completedTopics.join(', ')}
+- Known Weak Areas: ${data.weakAreas.join(', ')}
 
-Topic breakdown:
-${topicAnalysis}
+Based on their progress:
+1. Calculate an updated readiness score
+2. Suggest next focus areas
+3. Provide specific recommendations
+4. Identify any potential gaps
 
-Sample of user's answers:
-${userAnswers.slice(0, 1500)}
-
-Based on this performance, please provide:
-1. Specific weak areas that need improvement (topics/concepts where the user struggled)
-2. Concrete next steps and study resources to improve (3-5 actionable recommendations)
-3. Interview readiness score (0-100) for ${company} based on this performance
-4. A personalized feedback summary (2-3 sentences that are encouraging but honest)
-
-Respond ONLY with valid JSON in the following format:
+Return as JSON:
 {
-  "analysis": {
-    "accuracyPercentage": number,
-    "weakAreas": ["string", "string", ...],
-    "suggestedNextSteps": ["string", "string", ...],
-    "readinessScore": number,
-    "feedbackSummary": "string"
-  }
+  "updatedReadinessScore": number,
+  "nextSteps": [
+    {
+      "focus": "string",
+      "rationale": "string",
+      "suggestedActions": ["string"]
+    }
+  ],
+  "potentialGaps": ["string"]
 }
 `;
 
     const response = await generateContent(prompt);
-    
-    // Extract JSON from response
     const textContent = response.candidates[0].content.parts[0].text;
     const jsonMatch = textContent.match(/(\{[\s\S]*\})/);
-    
-    if (jsonMatch) {
-      try {
-        const analysisJson = JSON.parse(jsonMatch[0]);
-        return analysisJson;
-      } catch (parseError) {
-        console.error('Error parsing Gemini response as JSON:', parseError);
-        throw new Error('Failed to parse Gemini response as JSON');
-      }
-    } else {
-      throw new Error('No valid JSON found in Gemini response');
-    }
+    return JSON.parse(jsonMatch[0]);
   } catch (error) {
-    console.error('Test analysis error:', error);
+    console.error('Get progress recommendations error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Generate practice test based on domain and difficulty
+ * @param {string} domain - The domain for the test (e.g., DSA, System Design)
+ * @param {string} difficulty - Test difficulty level
+ * @param {string} targetCompany - Company to generate test for
+ * @returns {Promise<Object>} - Generated test questions
+ */
+const generateTest = async (domain, difficulty, targetCompany) => {
+  try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+
+    const prompt = `Generate a ${difficulty} level technical test for ${targetCompany} in the ${domain} domain.
+    Return exactly 10 multiple choice questions in this JSON format:
+    {
+      "questions": [
+        {
+          "question": "Question text",
+          "options": ["A", "B", "C", "D"],
+          "correctAnswer": 0,
+          "explanation": "Detailed explanation",
+          "topics": ["Topic1", "Topic2"]
+        }
+      ]
+    }
+
+    Ensure questions are company-specific and follow their interview patterns.`;
+
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    return JSON.parse(text);
+  } catch (error) {
+    console.error('Error generating test:', error);
+    throw error;
+  }
+};
+
+/**
+ * Analyze test results and provide feedback
+ * @param {Object} testData - Test performance data
+ * @returns {Promise<Object>} - Analysis and recommendations
+ */
+const analyzeTestResult = async (testData) => {
+  try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+
+    const prompt = `Analyze this test performance data:
+    Total Questions: ${testData.totalQuestions}
+    Correct Answers: ${testData.correctAnswers}
+    Time Spent: ${testData.timeSpent} seconds
+    Question Details: ${JSON.stringify(testData.questionDetails)}
+
+    Provide analysis in this JSON format:
+    {
+      "weakAreas": [
+        {
+          "topic": "Topic Name",
+          "accuracy": "percentage",
+          "suggestions": ["suggestion1", "suggestion2"]
+        }
+      ],
+      "overallFeedback": "Detailed feedback",
+      "improvementAreas": ["area1", "area2"]
+    }`;
+
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    return JSON.parse(text);
+  } catch (error) {
+    console.error('Error analyzing test result:', error);
     throw error;
   }
 };
@@ -295,6 +294,8 @@ Respond ONLY with valid JSON in the following format:
 module.exports = {
   generateContent,
   generateRoadmap,
-  generateMockTest,
-  analyzeTestResults
+  generateTest,
+  analyzeTestResult,
+  getNextMilestones,
+  getProgressRecommendations
 };

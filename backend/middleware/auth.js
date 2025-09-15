@@ -2,9 +2,12 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 // Environment variables would be used in production
-const JWT_SECRET = 'crackit-ai-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || 'crackit-ai-secret-key';
 
-module.exports = async (req, res, next) => {
+/**
+ * Middleware to protect routes that require authentication
+ */
+const protect = async (req, res, next) => {
   try {
     // Get token from header
     let token = req.header('Authorization');
@@ -74,3 +77,19 @@ module.exports = async (req, res, next) => {
     });
   }
 };
+
+/**
+ * Middleware to protect admin-only routes
+ */
+const admin = (req, res, next) => {
+  if (req.user && req.user.isAdmin) {
+    next();
+  } else {
+    res.status(401).json({ 
+      success: false,
+      message: 'Not authorized as an admin'
+    });
+  }
+};
+
+module.exports = { protect, admin };

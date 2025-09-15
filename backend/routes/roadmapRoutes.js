@@ -1,15 +1,27 @@
 const express = require('express');
 const router = express.Router();
 const roadmapController = require('../controllers/roadmapController');
-const auth = require('../middlewares/auth');
+const { protect } = require('../middleware/auth');
 
-// Generate roadmap for user
-router.post('/generate', auth, roadmapController.generateRoadmap);
+/**
+ * @route   POST /api/roadmap/generate
+ * @desc    Generate personalized learning roadmap based on survey data
+ * @access  Private
+ */
+router.post('/generate', protect, roadmapController.generateRoadmap);
 
-// Get user roadmap
-router.get('/user', auth, roadmapController.getUserRoadmap);
+/**
+ * @route   GET /api/roadmap
+ * @desc    Get user's current roadmap with progress and recommendations
+ * @access  Private
+ */
+router.get('/', protect, roadmapController.getUserRoadmap);
 
-// Update checklist item
-router.put('/checklist/:itemId', auth, roadmapController.updateChecklistItem);
+/**
+ * @route   PUT /api/roadmap/progress
+ * @desc    Update topic/subtopic progress and get AI recommendations
+ * @access  Private
+ */
+router.put('/progress', protect, roadmapController.updateNodeProgress);
 
 module.exports = router;

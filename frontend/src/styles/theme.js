@@ -24,34 +24,40 @@ export const theme = {
       rose: '#f43f5e',   // rose-500
     },
     
-    // Dark mode backgrounds
+    // Dark mode backgrounds with improved contrast and softer colors
     dark: {
       bg: {
-        primary: '#111827',   // gray-900
-        secondary: '#1f2937', // gray-800
-        card: '#374151',      // gray-700
+        primary: '#0A0F1F',   // Deeper blue-black
+        secondary: '#111827', // Refined dark blue
+        card: '#1F2937',      // Softer card background
+        cardHover: '#374151', // Lighter hover state
+        elevated: '#2D3748',  // Elevated elements
       },
       text: {
-        primary: '#f9fafb',   // gray-50
-        secondary: '#e5e7eb', // gray-200
-        muted: '#9ca3af',     // gray-400
+        primary: '#F9FAFB',   // Crisp white
+        secondary: '#E5E7EB', // Very light gray
+        muted: '#9CA3AF',     // Muted text
       },
-      border: '#374151',      // gray-700
+      border: '#374151',      // Refined border
+      divider: '#4B5563',     // Subtle divider
     },
     
-    // Light mode backgrounds
+    // Light mode backgrounds with subtle off-white
     light: {
       bg: {
-        primary: '#ffffff',
-        secondary: '#f9fafb', // gray-50
-        card: '#f3f4f6',      // gray-100
+        primary: '#F8FAFC',   // slate-50
+        secondary: '#FFFFFF', // white
+        card: '#FFFFFF',      // white
+        cardHover: '#F1F5F9', // slate-100
+        elevated: '#F1F5F9',  // slate-100
       },
       text: {
-        primary: '#111827',   // gray-900
-        secondary: '#374151', // gray-700
-        muted: '#6b7280',     // gray-500
+        primary: '#0F172A',   // slate-900
+        secondary: '#334155', // slate-700
+        muted: '#64748B',     // slate-500
       },
-      border: '#e5e7eb',      // gray-200
+      border: '#E2E8F0',      // slate-200
+      divider: '#CBD5E1',     // slate-300
     },
     
     // Feedback colors
@@ -70,42 +76,71 @@ export const theme = {
     accent: 'linear-gradient(to right, #8b5cf6, #ec4899)', // violet to pink
   },
   
-  // Shadows
+  // Enhanced shadows with dark mode variants
   shadows: {
-    sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-    md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-    lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-    xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+    light: {
+      sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+      md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+      lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+      xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+      hover: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+    },
+    dark: {
+      sm: '0 1px 2px 0 rgba(0, 0, 0, 0.3)',
+      md: '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)',
+      lg: '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)',
+      xl: '0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2)',
+      hover: '0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3)',
+    }
   },
   
-  // Transitions
+  // Refined transitions for smoother animations
   transitions: {
-    default: 'all 0.3s ease',
-    fast: 'all 0.15s ease',
-    slow: 'all 0.5s ease',
+    default: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+    fast: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
+    slow: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    transform: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+    opacity: 'opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+    colors: 'background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease',
+    height: 'max-height 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  },
+  
+  // Card styles
+  card: {
+    borderRadius: '1rem',
+    padding: '1.5rem',
+    gap: '1rem',
+    hover: {
+      transform: 'translateY(-2px)',
+    }
   }
 };
 
-// Helper function to get theme colors based on current mode
+// Enhanced helper function to get theme colors based on current mode
 export const getThemeColors = (isDarkMode) => {
+  const mode = isDarkMode ? 'dark' : 'light';
   return {
     bg: {
-      primary: isDarkMode ? theme.colors.dark.bg.primary : theme.colors.light.bg.primary,
-      secondary: isDarkMode ? theme.colors.dark.bg.secondary : theme.colors.light.bg.secondary,
-      card: isDarkMode ? theme.colors.dark.bg.card : theme.colors.light.bg.card,
+      ...theme.colors[mode].bg,
     },
     text: {
-      primary: isDarkMode ? theme.colors.dark.text.primary : theme.colors.light.text.primary,
-      secondary: isDarkMode ? theme.colors.dark.text.secondary : theme.colors.light.text.secondary,
-      muted: isDarkMode ? theme.colors.dark.text.muted : theme.colors.light.text.muted,
+      ...theme.colors[mode].text,
     },
-    border: isDarkMode ? theme.colors.dark.border : theme.colors.light.border,
+    border: theme.colors[mode].border,
+    divider: theme.colors[mode].divider,
     primary: theme.colors.primary,
     secondary: theme.colors.secondary,
     accent: theme.colors.accent,
     feedback: theme.colors.feedback,
     gradients: theme.gradients,
-    shadows: theme.shadows,
+    shadows: theme.shadows[mode],
     transitions: theme.transitions,
+    card: {
+      ...theme.card,
+      background: theme.colors[mode].bg.card,
+      hoverBackground: theme.colors[mode].bg.cardHover,
+      shadow: theme.shadows[mode].md,
+      hoverShadow: theme.shadows[mode].hover,
+    },
   };
 };

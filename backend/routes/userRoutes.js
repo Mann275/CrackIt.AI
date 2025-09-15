@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
-const auth = require('../middlewares/auth');
+const { protect } = require('../middleware/auth');
 
 // Update user profile
-router.put('/update-profile', auth, userController.updateProfile);
+router.put('/update-profile', protect, userController.updateProfile);
 
 // Change password
-router.put('/change-password', auth, userController.changePassword);
+router.put('/change-password', protect, userController.changePassword);
 
 module.exports = router;
