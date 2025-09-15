@@ -7,12 +7,11 @@ import { toast } from 'react-hot-toast';
 import axios from 'axios';
 
 const SkillSurvey = () => {
-  const { darkMode } = useTheme();
+  const { colors } = useTheme();
   const { user, updateProfile } = useAuth();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   
   const [formData, setFormData] = useState({
     dsaSkills: {
@@ -112,7 +111,6 @@ const SkillSurvey = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
     
     try {
       // Save skills to user profile
@@ -121,26 +119,20 @@ const SkillSurvey = () => {
         hasCompletedSkillSurvey: true
       });
       
-      // Send data to AI service for roadmap generation
-      const response = await fetch('http://localhost:5000/api/roadmap/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ 
-          userId: user._id,
-          skills: formData 
-        })
+      toast.success('Skills saved successfully!');
+
+      // Generate roadmap
+      const response = await axios.post('/api/roadmap/generate', {
+        userId: user._id,
+        skills: formData
       });
       
-      if (!response.ok) {
-        throw new Error('Failed to generate roadmap');
+      if (response.data) {
+        toast.success('Roadmap generated successfully!');
+        navigate('/roadmap');
       }
-      
-      navigate('/dashboard');
     } catch (err) {
-      setError('Failed to save your skill assessment. Please try again.');
+      toast.error(err.response?.data?.message || 'Failed to save and generate roadmap');
       console.error(err);
     } finally {
       setLoading(false);
@@ -148,19 +140,15 @@ const SkillSurvey = () => {
   };
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
+    <div style={{ backgroundColor: colors.background, color: colors.text }} className="min-h-screen">
+      <BackButton />
+      
       <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className={`rounded-lg shadow-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} p-8`}>
+        <div className="rounded-lg shadow-lg p-8" style={{ backgroundColor: colors.cardBg }}>
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold">Skill Assessment</h1>
             <p className="mt-2 text-lg">Help us understand your current skill level to create a personalized roadmap</p>
           </div>
-          
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
-              <span className="block sm:inline">{error}</span>
-            </div>
-          )}
           
           <form onSubmit={handleSubmit}>
             {/* DSA Skills */}
@@ -186,8 +174,9 @@ const SkillSurvey = () => {
                       value={formData.dsaSkills[topic.id]}
                       onChange={(e) => handleDsaChange(topic.id, e.target.value)}
                       className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
+                      style={{ backgroundColor: colors.border }}
                     />
-                    <div className="flex justify-between text-xs mt-1">
+                    <div className="flex justify-between text-xs mt-1" style={{ color: colors.textSecondary }}>
                       <span>Beginner</span>
                       <span>Expert</span>
                     </div>
@@ -219,8 +208,9 @@ const SkillSurvey = () => {
                       value={formData.coreCSSkills[topic.id]}
                       onChange={(e) => handleCoreCSChange(topic.id, e.target.value)}
                       className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
+                      style={{ backgroundColor: colors.border }}
                     />
-                    <div className="flex justify-between text-xs mt-1">
+                    <div className="flex justify-between text-xs mt-1" style={{ color: colors.textSecondary }}>
                       <span>Beginner</span>
                       <span>Expert</span>
                     </div>
@@ -252,8 +242,9 @@ const SkillSurvey = () => {
                       value={formData.devExperience[topic.id]}
                       onChange={(e) => handleDevExpChange(topic.id, e.target.value)}
                       className="w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer"
+                      style={{ backgroundColor: colors.border }}
                     />
-                    <div className="flex justify-between text-xs mt-1">
+                    <div className="flex justify-between text-xs mt-1" style={{ color: colors.textSecondary }}>
                       <span>Beginner</span>
                       <span>Expert</span>
                     </div>
@@ -262,17 +253,26 @@ const SkillSurvey = () => {
               </div>
             </section>
             
-            <div className="mt-8 flex justify-end">
+            <div className="mt-8 flex justify-between">
+              <button
+                type="button"
+                onClick={() => navigate('/settings')}
+                className="px-6 py-2 rounded-md"
+                style={{ backgroundColor: colors.surface, color: colors.text }}
+              >
+                Cancel
+              </button>
+              
               <button
                 type="submit"
                 disabled={loading}
-                className={`px-6 py-2 rounded-md ${
-                  loading 
-                    ? 'bg-blue-400 cursor-not-allowed text-white' 
-                    : darkMode 
-                      ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                      : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
+                className="px-6 py-2 rounded-md"
+                style={{ 
+                  backgroundColor: colors.primary,
+                  color: colors.buttonText,
+                  opacity: loading ? 0.7 : 1,
+                  cursor: loading ? 'not-allowed' : 'pointer'
+                }}
               >
                 {loading ? 'Submitting...' : 'Generate My Roadmap'}
               </button>

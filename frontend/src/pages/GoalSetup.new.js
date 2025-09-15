@@ -6,7 +6,7 @@ import BackButton from '../components/BackButton';
 import { toast } from 'react-hot-toast';
 
 const GoalSetup = () => {
-  const { darkMode } = useTheme();
+  const { colors } = useTheme();
   const { user, updateProfile } = useAuth();
   const navigate = useNavigate();
 
@@ -84,17 +84,17 @@ const GoalSetup = () => {
 
   const nextStep = () => {
     if (step === 1 && formData.targetCompanies.length === 0) {
-      setError('Please select at least one target company');
+      toast.error('Please select at least one target company');
       return;
     }
     
     if (step === 2 && !formData.preferredDomain) {
-      setError('Please select your preferred domain');
+      toast.error('Please select your preferred domain');
       return;
     }
     
     if (step === 3 && formData.techStack.length === 0) {
-      setError('Please select at least one technology stack');
+      toast.error('Please select at least one technology stack');
       return;
     }
     
@@ -109,22 +109,24 @@ const GoalSetup = () => {
 
   const handleSubmit = async () => {
     if (!formData.expectedLPA) {
-      setError('Please enter your expected LPA');
+      toast.error('Please enter your expected LPA');
       return;
     }
     
     setLoading(true);
-    setError('');
     
     try {
       await updateProfile({
-        ...formData,
-        hasCompletedGoalSetup: true
+        goals: {
+          ...formData,
+          hasCompletedGoalSetup: true
+        }
       });
-      
+
+      toast.success('Goals saved successfully!');
       navigate('/skill-survey');
     } catch (err) {
-      setError('Failed to save your goals. Please try again.');
+      toast.error(err.response?.data?.message || 'Failed to save goals');
       console.error(err);
     } finally {
       setLoading(false);
@@ -132,9 +134,11 @@ const GoalSetup = () => {
   };
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
+    <div style={{ backgroundColor: colors.background, color: colors.text }} className="min-h-screen">
+      <BackButton />
+      
       <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className={`rounded-lg shadow-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} p-8`}>
+        <div className="rounded-lg shadow-lg p-8" style={{ backgroundColor: colors.cardBg }}>
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold">Welcome to CrackIt.AI</h1>
             <p className="mt-2 text-lg">Let's set up your personalized placement preparation journey</p>
@@ -145,20 +149,17 @@ const GoalSetup = () => {
                 <span className="text-sm">Step {step} of 4</span>
                 <span className="text-sm">{Math.round((step / 4) * 100)}% Complete</span>
               </div>
-              <div className="h-2 w-full bg-gray-300 rounded-full">
+              <div className="h-2 w-full rounded-full" style={{ backgroundColor: colors.surface }}>
                 <div 
-                  className="h-2 bg-blue-600 rounded-full" 
-                  style={{ width: `${(step / 4) * 100}%` }}
+                  className="h-2 rounded-full"
+                  style={{ 
+                    width: `${(step / 4) * 100}%`,
+                    backgroundColor: colors.primary
+                  }}
                 ></div>
               </div>
             </div>
           </div>
-          
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
-              <span className="block sm:inline">{error}</span>
-            </div>
-          )}
           
           {/* Step 1: Target Companies */}
           {step === 1 && (
@@ -171,11 +172,11 @@ const GoalSetup = () => {
                   <div 
                     key={company}
                     onClick={() => handleCompanyToggle(company)}
-                    className={`px-4 py-3 rounded-lg cursor-pointer border ${
-                      formData.targetCompanies.includes(company) 
-                        ? darkMode ? 'bg-blue-800 border-blue-700' : 'bg-blue-100 border-blue-300'
-                        : darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-100 border-gray-300'
-                    }`}
+                    className="px-4 py-3 rounded-lg cursor-pointer border"
+                    style={{ 
+                      backgroundColor: formData.targetCompanies.includes(company) ? colors.primary + '20' : colors.surface,
+                      borderColor: formData.targetCompanies.includes(company) ? colors.primary : colors.border
+                    }}
                   >
                     <div className="flex items-center">
                       <input 
@@ -208,7 +209,8 @@ const GoalSetup = () => {
                       value={domain}
                       checked={formData.preferredDomain === domain}
                       onChange={handleDomainChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                      className="h-4 w-4"
+                      style={{ accentColor: colors.primary }}
                     />
                     <label htmlFor={domain} className="ml-3">
                       {domain}
@@ -230,11 +232,11 @@ const GoalSetup = () => {
                   <div 
                     key={tech}
                     onClick={() => handleTechStackToggle(tech)}
-                    className={`px-4 py-3 rounded-lg cursor-pointer border ${
-                      formData.techStack.includes(tech) 
-                        ? darkMode ? 'bg-blue-800 border-blue-700' : 'bg-blue-100 border-blue-300'
-                        : darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-100 border-gray-300'
-                    }`}
+                    className="px-4 py-3 rounded-lg cursor-pointer border"
+                    style={{ 
+                      backgroundColor: formData.techStack.includes(tech) ? colors.primary + '20' : colors.surface,
+                      borderColor: formData.techStack.includes(tech) ? colors.primary : colors.border
+                    }}
                   >
                     <div className="flex items-center">
                       <input 
@@ -261,7 +263,7 @@ const GoalSetup = () => {
                 <label htmlFor="expectedLPA" className="block text-sm font-medium mb-1">Expected LPA</label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 sm:text-sm">₹</span>
+                    <span style={{ color: colors.textSecondary }}>₹</span>
                   </div>
                   <input
                     type="number"
@@ -269,16 +271,17 @@ const GoalSetup = () => {
                     id="expectedLPA"
                     value={formData.expectedLPA}
                     onChange={handleLPAChange}
-                    className={`block w-full pl-7 pr-12 py-2 rounded-md ${
-                      darkMode 
-                        ? 'bg-gray-700 border-gray-600 focus:ring-blue-500 focus:border-blue-500' 
-                        : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
-                    }`}
+                    className="block w-full pl-7 pr-12 py-2 rounded-md"
+                    style={{ 
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
+                      color: colors.text
+                    }}
                     placeholder="0.00"
                     aria-describedby="price-currency"
                   />
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 sm:text-sm" id="price-currency">
+                    <span style={{ color: colors.textSecondary }} id="price-currency">
                       LPA
                     </span>
                   </div>
@@ -287,7 +290,7 @@ const GoalSetup = () => {
               
               <div className="mt-6">
                 <h3 className="text-lg font-medium mb-3">Your Selected Preferences</h3>
-                <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                <div className="p-4 rounded-lg" style={{ backgroundColor: colors.surface }}>
                   <p><strong>Target Companies:</strong> {formData.targetCompanies.join(", ")}</p>
                   <p><strong>Preferred Domain:</strong> {formData.preferredDomain}</p>
                   <p><strong>Tech Stack:</strong> {formData.techStack.join(", ")}</p>
@@ -299,27 +302,29 @@ const GoalSetup = () => {
           
           {/* Navigation Buttons */}
           <div className="mt-8 flex justify-between">
-            {step > 1 && (
+            {step > 1 ? (
               <button
                 onClick={prevStep}
-                className={`px-4 py-2 rounded-md ${
-                  darkMode 
-                    ? 'bg-gray-700 hover:bg-gray-600 text-white' 
-                    : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
-                }`}
+                className="px-4 py-2 rounded-md"
+                style={{ backgroundColor: colors.surface }}
               >
                 Back
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate('/settings')}
+                className="px-4 py-2 rounded-md"
+                style={{ backgroundColor: colors.surface }}
+              >
+                Cancel
               </button>
             )}
             
             {step < 4 ? (
               <button
                 onClick={nextStep}
-                className={`px-4 py-2 rounded-md ml-auto ${
-                  darkMode 
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
+                className="px-4 py-2 rounded-md"
+                style={{ backgroundColor: colors.primary, color: colors.buttonText }}
               >
                 Next
               </button>
@@ -327,15 +332,15 @@ const GoalSetup = () => {
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className={`px-4 py-2 rounded-md ml-auto ${
-                  loading 
-                    ? 'bg-blue-400 cursor-not-allowed text-white' 
-                    : darkMode 
-                      ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                      : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
+                className="px-4 py-2 rounded-md"
+                style={{ 
+                  backgroundColor: colors.primary,
+                  color: colors.buttonText,
+                  opacity: loading ? 0.7 : 1,
+                  cursor: loading ? 'not-allowed' : 'pointer'
+                }}
               >
-                {loading ? 'Saving...' : 'Finish'}
+                {loading ? 'Saving...' : 'Start Survey'}
               </button>
             )}
           </div>

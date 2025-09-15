@@ -16,6 +16,7 @@ import Settings from './pages/Settings';
 import Roadmap from './pages/Roadmap';
 import Chatroom from './pages/Chatroom';
 import Checklist from './pages/Checklist';
+import MockTests from './pages/MockTests';
 import AuthAwareLayout from './components/AuthAwareLayout';
 import './index.css';
 
@@ -149,6 +150,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Checklist />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/mock-tests" 
+              element={
+                <ProtectedRoute>
+                  <MockTests />
                 </ProtectedRoute>
               } 
             />

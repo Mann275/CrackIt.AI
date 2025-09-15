@@ -66,6 +66,41 @@ const Settings = () => {
               style={{ backgroundColor: colors.cardBg, borderColor: colors.border }}
             >
               <h2 className="text-xl font-semibold mb-6 flex items-center gap-2" style={{ color: colors.text }}>
+                <span>Roadmap Settings</span>
+                <span role="img" aria-label="profile">🗺️</span>
+              </h2>
+              
+              <div className="space-y-4 mb-8">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate('/skill-survey')}
+                  className="w-full p-4 rounded-lg flex items-center justify-between"
+                  style={{ backgroundColor: colors.surface, border: `1px solid ${colors.border}`, color: colors.text }}
+                >
+                  <span className="flex items-center gap-2">
+                    <span>Update Skill Survey</span>
+                    <span role="img" aria-label="survey">📝</span>
+                  </span>
+                  <ChevronRightIcon className="w-5 h-5" />
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate('/goal-setup')}
+                  className="w-full p-4 rounded-lg flex items-center justify-between"
+                  style={{ backgroundColor: colors.surface, border: `1px solid ${colors.border}`, color: colors.text }}
+                >
+                  <span className="flex items-center gap-2">
+                    <span>Goal Setup</span>
+                    <span role="img" aria-label="goal">🎯</span>
+                  </span>
+                  <ChevronRightIcon className="w-5 h-5" />
+                </motion.button>
+              </div>
+
+              <h2 className="text-xl font-semibold mb-6 flex items-center gap-2" style={{ color: colors.text }}>
                 <span>Profile Settings</span>
                 <span role="img" aria-label="profile">👤</span>
               </h2>

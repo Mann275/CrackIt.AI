@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-router.get('/test', function testRoute(req, res) {
-  res.json({ message: 'Test route working' });
+router.get('/test', function(req, res) {
+  res.json({ message: 'Goals route test endpoint' });
 });
 
 module.exports = router;

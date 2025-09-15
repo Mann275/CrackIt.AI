@@ -1,18 +1,17 @@
 const SkillSurvey = require('../models/SkillSurvey');
 
 // Get user's skill survey
-const getUserSkillSurvey = async (req, res) => {
-  try {
-    const survey = await SkillSurvey.findOne({ user: req.user.id });
-    res.json(survey);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server Error' });
-  }
+exports.getUserSkillSurvey = function getUserSkillSurvey(req, res) {
+  SkillSurvey.findOne({ user: req.user.id })
+    .then(survey => res.json(survey))
+    .catch(error => {
+      console.error(error);
+      res.status(500).json({ message: 'Server Error' });
+    });
 };
 
 // Create or update skill survey
-const updateSkillSurvey = async (req, res) => {
+exports.updateSkillSurvey = async function updateSkillSurvey(req, res) {
   const { dsaTopics, coreSubjects, developmentExperience } = req.body;
 
   try {
@@ -54,7 +53,7 @@ const updateSkillSurvey = async (req, res) => {
 };
 
 // Get survey statistics
-const getSurveyStats = async (req, res) => {
+exports.getSurveyStats = async function getSurveyStats(req, res) {
   try {
     const survey = await SkillSurvey.findOne({ user: req.user.id });
     
@@ -114,8 +113,4 @@ const getSurveyStats = async (req, res) => {
   }
 };
 
-module.exports = {
-  getUserSkillSurvey,
-  updateSkillSurvey,
-  getSurveyStats
-};
+// Exports handled through individual function declarations above

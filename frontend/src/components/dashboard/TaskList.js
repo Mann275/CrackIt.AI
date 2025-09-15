@@ -77,7 +77,7 @@ const TaskList = ({ tasks, onToggleTask }) => {
             </div>
             <span className={`text-sm font-medium ${
               isDarkMode ? 'text-slate-300' : 'text-slate-500'
-            }`}
+            }`}>
               {task.dueDate}
             </span>
           </motion.div>

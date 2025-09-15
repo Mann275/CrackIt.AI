@@ -25,13 +25,10 @@ const Sidebar = () => {
 
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: HomeIcon },
-    { name: 'Goal Setup', path: '/goal-setup', icon: AcademicCapIcon },
-    { name: 'Skill Survey', path: '/skill-survey', icon: QuestionMarkCircleIcon },
     { name: 'Roadmap', path: '/roadmap', icon: MapIcon },
-    { name: 'Practice Tests', path: '/practice-tests', icon: BeakerIcon },
+    { name: 'Mock Tests', path: '/mock-tests', icon: BeakerIcon },
     { name: 'Checklist', path: '/checklist', icon: ClipboardDocumentIcon },
     { name: 'Chatrooms', path: '/chat', icon: ChatBubbleLeftRightIcon },
-    { name: 'QnA Vault', path: '/qna', icon: QuestionMarkCircleIcon },
     { name: 'Settings', path: '/settings', icon: Cog6ToothIcon }
   ];
 
@@ -86,7 +83,7 @@ const Sidebar = () => {
               exit={{ opacity: 0 }}
               className="flex items-center"
             >
-              <span className="text-xl font-bold text-indigo-500">C.AI</span>
+              <span className="text-xl font-bold text-indigo-500"></span>
             </motion.div>
           )}
         </AnimatePresence>
