@@ -346,11 +346,11 @@ const AuthPage = () => {
               
               {/* Password Strength Indicator - Only show for registration */}
               {currentView === 'register' && formData.password && (
-                <div className="mt-2 p-4 rounded-lg bg-slate-800 border border-slate-700">
+                <div className="mt-2 p-4 rounded-lg bg-orange-50 border border-orange-200">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-white">Password Strength</span>
+                    <span className="text-sm font-medium text-slate-700">Password Strength</span>
                     <span className={`text-sm font-medium ${
-                      passwordStrength.isStrong ? 'text-green-400' : 'text-orange-400'
+                      passwordStrength.isStrong ? 'text-green-600' : 'text-orange-600'
                     }`}>
                       {passwordStrength.isStrong ? 'Strong password' : 'Weak password'}
                     </span>
@@ -358,13 +358,13 @@ const AuthPage = () => {
                   
                   {/* Progress Bar */}
                   <div className="mb-4">
-                    <div className="h-2 bg-slate-600 rounded-full overflow-hidden">
+                    <div className="h-2 bg-orange-200 rounded-full overflow-hidden">
                       <div 
                         className={`h-full transition-all duration-300 rounded-full ${
                           passwordStrength.score === 1 ? 'bg-red-500 w-1/4' :
                           passwordStrength.score === 2 ? 'bg-orange-500 w-2/4' :
                           passwordStrength.score === 3 ? 'bg-yellow-500 w-3/4' :
-                          passwordStrength.score === 4 ? 'bg-green-500 w-full' : 'bg-slate-600 w-0'
+                          passwordStrength.score === 4 ? 'bg-green-500 w-full' : 'bg-orange-200 w-0'
                         }`}
                       />
                     </div>
@@ -375,12 +375,12 @@ const AuthPage = () => {
                     {passwordStrength.checks.map((check, index) => (
                       <div key={index} className="flex items-center space-x-2">
                         <div className={`w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold ${
-                          check.met ? 'bg-green-500 text-white' : 'bg-slate-600 text-slate-400'
+                          check.met ? 'bg-green-500 text-white' : 'bg-orange-300 text-orange-600'
                         }`}>
                           {check.met ? '✓' : ''}
                         </div>
                         <span className={`text-xs ${
-                          check.met ? 'text-green-400' : 'text-slate-400'
+                          check.met ? 'text-green-600' : 'text-slate-600'
                         }`}>
                           {check.label}
                         </span>
