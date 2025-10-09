@@ -49,7 +49,7 @@ If you encounter any issues during deployment, check the following:
 1. **Missing Requirements**: Ensure `requirements.txt` points to your backend requirements
 2. **Environment Variables**: Verify all required environment variables are set correctly
 3. **Import Paths**: If React build fails, check import paths in UI components 
-   (should be `from "../../../lib/utils"` not `from "../../lib/utils"`)
+   (should be `from "../lib/utils"` to use the local utils.js file in components/lib)
 4. **Database Connection**: Make sure your MongoDB connection string is correct and the database is accessible
 
 ## Updating the Deployment
