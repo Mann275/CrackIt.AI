@@ -1,0 +1,10 @@
+build:
+  type: web
+  name: crackit-frontend
+  runtime: node
+  rootDir: frontend
+  buildCommand: npm ci && npm run build
+  startCommand: npx serve -s build -l $PORT
+  envVars:
+    - key: REACT_APP_API_URL
+      value: https://crackit-backend.onrender.com
