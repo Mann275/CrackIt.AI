@@ -6,15 +6,19 @@ import { Brain } from 'lucide-react';
 
 const Home = ({ onShowAuth }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [hasCheckedToken, setHasCheckedToken] = useState(false);
 
   useEffect(() => {
     // SECURITY: Prevent Home component from rendering if user might be logged in
-    const token = localStorage.getItem('token');
-    if (token) {
-      console.warn('Home component blocked - user appears to be logged in');
-      setIsLoggedIn(true);
+    if (!hasCheckedToken) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        console.warn('Home component blocked - user appears to be logged in');
+        setIsLoggedIn(true);
+      }
+      setHasCheckedToken(true);
     }
-  }, []);
+  }, [hasCheckedToken]);
 
   if (isLoggedIn) {
     return null;

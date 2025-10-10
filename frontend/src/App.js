@@ -43,6 +43,13 @@ import {
 const BACKEND_URL = process.env.REACT_APP_API_URL || process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8000';
 const API = `${BACKEND_URL}/api`;
 
+// Debug: Log the URLs being used
+console.log('🔧 Debug Info:');
+console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
+console.log('REACT_APP_BACKEND_URL:', process.env.REACT_APP_BACKEND_URL);
+console.log('BACKEND_URL:', BACKEND_URL);
+console.log('API:', API);
+
 // Auth Context
 const AuthContext = createContext();
 
