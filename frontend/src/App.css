@@ -93,17 +93,19 @@ input::-webkit-outer-spin-button {
   opacity: 0 !important;
 }
 
-/* Hide unwanted floating elements but allow legitimate dropdowns */
-.tooltip-content:not([data-radix-popper-content-wrapper]),
-[data-tooltip]:not([data-radix-select-content]):not([data-radix-dropdown-menu-content]),
-.hover-card:not([data-radix-select-content]),
-.popover:not([data-radix-select-content]):not([data-radix-dropdown-menu-content]) {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  position: absolute !important;
-  left: -9999px !important;
+/* NEVER hide these select-related elements - HIGHEST PRIORITY */
+[data-radix-select-content],
+[data-radix-select-viewport], 
+[data-radix-select-item],
+[role="listbox"],
+[role="option"],
+.select-content,
+.select-item {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  z-index: 9999 !important;
 }
 
 /* Force hide any accidentally positioned elements but allow dropdowns */
@@ -118,39 +120,50 @@ div[style*="box-shadow"]:not(.card):not(.shadow):not([data-radix-select-content]
   display: none !important;
 }
 
-/* Ensure Select components work properly */
+/* Ensure Select components work properly - HIGHEST PRIORITY */
 [data-radix-select-content],
 [data-radix-select-viewport],
 [data-radix-dropdown-menu-content],
 [data-radix-popper-content-wrapper],
-[data-state="open"][data-radix-select-content] {
+[data-state="open"][data-radix-select-content],
+[role="listbox"],
+.select-content {
   display: flex !important;
   visibility: visible !important;
   opacity: 1 !important;
   pointer-events: auto !important;
   position: fixed !important;
-  z-index: 1000 !important;
+  z-index: 9999 !important;
   background: white !important;
   border: 1px solid #e2e8f0 !important;
   border-radius: 6px !important;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
   max-height: 200px !important;
   overflow-y: auto !important;
+  min-width: 200px !important;
 }
 
 /* Select items */
-[data-radix-select-item] {
+[data-radix-select-item],
+[role="option"] {
   display: flex !important;
   align-items: center !important;
   padding: 8px 12px !important;
   cursor: pointer !important;
   transition: background-color 0.2s !important;
+  white-space: nowrap !important;
 }
 
 [data-radix-select-item]:hover,
-[data-radix-select-item][data-highlighted] {
+[data-radix-select-item][data-highlighted],
+[role="option"]:hover {
   background-color: #f1f5f9 !important;
   outline: none !important;
+}
+
+/* Override any conflicting styles */
+[data-radix-select-content] * {
+  pointer-events: auto !important;
 }
 
 /* Custom slider styles */
