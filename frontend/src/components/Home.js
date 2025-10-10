@@ -5,24 +5,14 @@ import { RiRobot2Line } from 'react-icons/ri';
 import { Brain } from 'lucide-react';
 
 const Home = ({ onShowAuth }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [hasCheckedToken, setHasCheckedToken] = useState(false);
-
   useEffect(() => {
-    // SECURITY: Prevent Home component from rendering if user might be logged in
-    if (!hasCheckedToken) {
-      const token = localStorage.getItem('token');
-      if (token) {
-        console.warn('Home component blocked - user appears to be logged in');
-        setIsLoggedIn(true);
-      }
-      setHasCheckedToken(true);
+    // Clean up any aria-hidden attributes that might interfere with accessibility
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+      rootElement.removeAttribute('aria-hidden');
+      rootElement.removeAttribute('data-aria-hidden');
     }
-  }, [hasCheckedToken]);
-
-  if (isLoggedIn) {
-    return null;
-  }
+  }, []);
 
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },

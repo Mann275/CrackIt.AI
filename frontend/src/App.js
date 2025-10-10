@@ -43,12 +43,14 @@ import {
 const BACKEND_URL = process.env.REACT_APP_API_URL || process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8000';
 const API = `${BACKEND_URL}/api`;
 
-// Debug: Log the URLs being used
-console.log('🔧 Debug Info:');
-console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
-console.log('REACT_APP_BACKEND_URL:', process.env.REACT_APP_BACKEND_URL);
-console.log('BACKEND_URL:', BACKEND_URL);
-console.log('API:', API);
+// Debug: Log the URLs being used (only in development)
+if (process.env.NODE_ENV === 'development') {
+  console.log('🔧 Debug Info:');
+  console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
+  console.log('REACT_APP_BACKEND_URL:', process.env.REACT_APP_BACKEND_URL);
+  console.log('BACKEND_URL:', BACKEND_URL);
+  console.log('API:', API);
+}
 
 // Auth Context
 const AuthContext = createContext();
@@ -124,7 +126,6 @@ const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    console.log('Logout initiated');
     try {
       // Clear user state first
       setUser(null);
@@ -136,13 +137,18 @@ const AuthProvider = ({ children }) => {
       // Clear axios headers
       delete axios.defaults.headers.common['Authorization'];
       
+      // Clean up any aria-hidden attributes
+      const rootElement = document.getElementById('root');
+      if (rootElement) {
+        rootElement.removeAttribute('aria-hidden');
+        rootElement.removeAttribute('data-aria-hidden');
+      }
+      
       // Show success message
       toast({ 
         title: "Logged out", 
         description: "You've been successfully logged out." 
       });
-      
-      console.log('Logout completed successfully');
       
     } catch (error) {
       console.error('Logout error:', error);
@@ -198,6 +204,13 @@ const AuthPage = () => {
   const passwordStrength = getPasswordStrength(formData.password);
 
   const handleShowAuth = (type) => {
+    // Remove any aria-hidden attributes that might interfere
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+      rootElement.removeAttribute('aria-hidden');
+      rootElement.removeAttribute('data-aria-hidden');
+    }
+    
     if (type === 'login') {
       setCurrentView('login');
     } else if (type === 'register') {
@@ -234,20 +247,22 @@ const AuthPage = () => {
     if (currentView === 'login') {
       const success = await login(formData.email, formData.password);
       if (success) {
-        // Force hide any potential background elements
-        document.body.style.overflow = 'hidden';
-        setTimeout(() => {
-          document.body.style.overflow = 'auto';
-        }, 100);
+        // Clean up any aria-hidden attributes
+        const rootElement = document.getElementById('root');
+        if (rootElement) {
+          rootElement.removeAttribute('aria-hidden');
+          rootElement.removeAttribute('data-aria-hidden');
+        }
       }
     } else if (currentView === 'register') {
       const success = await register(formData);
       if (success) {
-        // Force hide any potential background elements
-        document.body.style.overflow = 'hidden';
-        setTimeout(() => {
-          document.body.style.overflow = 'auto';
-        }, 100);
+        // Clean up any aria-hidden attributes
+        const rootElement = document.getElementById('root');
+        if (rootElement) {
+          rootElement.removeAttribute('aria-hidden');
+          rootElement.removeAttribute('data-aria-hidden');
+        }
       }
     }
   };
@@ -666,16 +681,11 @@ const GoalsSetup = ({ onComplete }) => {
 
   const fetchOptions = async () => {
     try {
-      console.log('🔍 Fetching options from API...');
       const [companiesRes, domainsRes, languagesRes] = await Promise.all([
         axios.get(`${API}/companies`),
         axios.get(`${API}/domains`),
         axios.get(`${API}/languages`)
       ]);
-      
-      console.log('📊 Domains received:', domainsRes.data.domains);
-      console.log('🏢 Companies received:', companiesRes.data.companies);
-      console.log('💻 Languages received:', languagesRes.data.languages);
       
       setCompanies(companiesRes.data.companies);
       setDomains(domainsRes.data.domains);
@@ -728,18 +738,13 @@ const GoalsSetup = ({ onComplete }) => {
 
             <div style={{ position: 'relative', zIndex: 10 }}>
               <Label htmlFor="domain">Preferred Domain</Label>
-              {console.log('🎯 Rendering domain select with domains:', domains)}
               <Select 
                 value={goals.preferred_domain} 
                 onValueChange={(value) => {
-                  console.log('🔄 Domain selected:', value);
                   setGoals({...goals, preferred_domain: value});
                 }}
               >
-                <SelectTrigger 
-                  onClick={() => console.log('🖱️ Select trigger clicked!')}
-                  style={{ backgroundColor: 'white', border: '1px solid #d1d5db' }}
-                >
+                <SelectTrigger style={{ backgroundColor: 'white', border: '1px solid #d1d5db' }}>
                   <SelectValue placeholder="Select your preferred domain" />
                 </SelectTrigger>
                 <SelectContent side="bottom" align="start">
@@ -825,11 +830,10 @@ const SkillSurvey = ({ onComplete }) => {
     try {
       const response = await axios.get(`${API}/survey`);
       if (response.data) {
-        console.log('Loading existing survey data:', response.data);
         setSurvey(response.data);
       }
     } catch (error) {
-      console.log('No existing survey found, using defaults');
+      // No existing survey found, using defaults
     } finally {
       setLoading(false);
     }
@@ -847,11 +851,7 @@ const SkillSurvey = ({ onComplete }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log('Submitting survey data:', survey);
-      console.log('API URL:', `${API}/survey`);
-      
       const response = await axios.post(`${API}/survey`, survey);
-      console.log('Survey response:', response.data);
       
       toast({ 
         title: "Assessment updated!", 
@@ -1036,7 +1036,6 @@ const RoadmapView = () => {
   const fetchRoadmap = async () => {
     try {
       const response = await axios.get(`${API}/roadmap`);
-      console.log('Roadmap response:', response.data);
       setRoadmap(response.data);
     } catch (error) {
       console.error('Failed to fetch roadmap:', error);
@@ -1048,8 +1047,6 @@ const RoadmapView = () => {
   const generateRoadmap = async () => {
     setLoading(true);
     try {
-      console.log('Generating roadmap...');
-      
       // Check if backend is reachable
       try {
         await axios.get(`${API}/profile`);
@@ -1058,17 +1055,14 @@ const RoadmapView = () => {
       }
       
       const response = await axios.post(`${API}/roadmap/generate`);
-      console.log('Roadmap generation response:', response.data);
       
       if (response.data && response.data.roadmap_items) {
-        console.log('Roadmap items count:', response.data.roadmap_items.length);
         setRoadmap(response.data);
         toast({ 
           title: "Roadmap generated!", 
           description: `Your personalized learning path with ${response.data.roadmap_items.length} tasks is ready.` 
         });
       } else {
-        console.error('Invalid roadmap data:', response.data);
         throw new Error("Invalid roadmap data received");
       }
     } catch (error) {
@@ -1543,8 +1537,7 @@ const ChatRoom = () => {
   }, []);
 
   const initializeSocket = () => {
-    // Temporarily disable Socket.IO and use REST API for chat
-    console.log('🔧 Using REST API for chat (Socket.IO disabled)');
+    // Using REST API for chat
     setConnected(true);
     toast({ title: "Chat Ready", description: "Using REST API mode" });
   };
@@ -1750,7 +1743,6 @@ const ProfileView = ({ setSetupStep }) => {
         axios.get(`${API}/languages`)
       ]);
       
-      console.log('Survey data loaded:', surveyRes.data); // Debug log
       setGoals(goalsRes.data);
       setSurvey(surveyRes.data);
       setCompanies(companiesRes.data.companies || []);
@@ -2161,6 +2153,15 @@ const MainApp = () => {
 // Root App Component
 function App() {
   const { user, loading } = useAuth();
+
+  useEffect(() => {
+    // Clean up any aria-hidden attributes that might cause accessibility issues
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+      rootElement.removeAttribute('aria-hidden');
+      rootElement.removeAttribute('data-aria-hidden');
+    }
+  }, [user]); // Re-run when user state changes
 
   if (loading) {
     return (
