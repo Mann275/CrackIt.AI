@@ -168,8 +168,21 @@ const AuthProvider = ({ children }) => {
 
 // Auth Pages
 const AuthPage = () => {
-  const { login, register } = useAuth();
+  const { login, register, user } = useAuth();
   const [currentView, setCurrentView] = useState('home'); // 'home', 'features', 'login', 'register'
+  
+  // SECURITY: Don't render AuthPage if user is already logged in
+  useEffect(() => {
+    if (user) {
+      console.warn('🚫 AuthPage blocked - user is already logged in');
+      return;
+    }
+  }, [user]);
+  
+  // Don't render if user is logged in
+  if (user) {
+    return null;
+  }
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -736,7 +749,7 @@ const GoalsSetup = ({ onComplete }) => {
               </div>
             </div>
 
-            <div style={{ position: 'relative', zIndex: 10 }}>
+            <div className="space-y-2">
               <Label htmlFor="domain">Preferred Domain</Label>
               <Select 
                 value={goals.preferred_domain} 
@@ -744,10 +757,10 @@ const GoalsSetup = ({ onComplete }) => {
                   setGoals({...goals, preferred_domain: value});
                 }}
               >
-                <SelectTrigger style={{ backgroundColor: 'white', border: '1px solid #d1d5db' }}>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select your preferred domain" />
                 </SelectTrigger>
-                <SelectContent side="bottom" align="start">
+                <SelectContent position="popper" sideOffset={4}>
                   {domains.length > 0 ? domains.map(domain => (
                     <SelectItem key={domain} value={domain}>{domain}</SelectItem>
                   )) : (
@@ -755,11 +768,6 @@ const GoalsSetup = ({ onComplete }) => {
                   )}
                 </SelectContent>
               </Select>
-              
-              {/* Debug info */}
-              <div className="text-xs text-gray-500 mt-1">
-                Domains loaded: {domains.length} | Selected: {goals.preferred_domain || 'None'}
-              </div>
             </div>
 
             <div>

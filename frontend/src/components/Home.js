@@ -6,6 +6,17 @@ import { Brain } from 'lucide-react';
 
 const Home = ({ onShowAuth }) => {
   useEffect(() => {
+    // SECURITY: Block Home component if user is logged in
+    const token = localStorage.getItem('token');
+    if (token) {
+      console.warn('🚫 Home component blocked - user is logged in');
+      // Redirect to dashboard or force reload
+      if (window.location.pathname !== '/dashboard') {
+        window.location.reload();
+      }
+      return;
+    }
+
     // Clean up any aria-hidden attributes that might interfere with accessibility
     const rootElement = document.getElementById('root');
     if (rootElement) {
@@ -13,6 +24,12 @@ const Home = ({ onShowAuth }) => {
       rootElement.removeAttribute('data-aria-hidden');
     }
   }, []);
+
+  // Additional safety check - don't render if token exists
+  const token = localStorage.getItem('token');
+  if (token) {
+    return null;
+  }
 
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
