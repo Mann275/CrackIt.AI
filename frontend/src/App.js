@@ -1546,14 +1546,17 @@ const ChatRoom = () => {
     try {
       console.log('🔌 Initializing Socket.IO connection to:', BACKEND_URL);
       const newSocket = io(BACKEND_URL, {
-        transports: ['polling', 'websocket'], // Try polling first, then websocket
-        upgrade: true,
-        rememberUpgrade: false, // Don't remember upgrade to avoid cached issues
-        timeout: 10000, // Increased timeout for production
+        transports: ['polling'], // Use only polling for production compatibility
+        upgrade: false, // Disable upgrades for stability
+        rememberUpgrade: false,
+        timeout: 20000, // Increased timeout for production
         forceNew: true,
         reconnection: true,
-        reconnectionDelay: 2000,
-        reconnectionAttempts: 5
+        reconnectionDelay: 5000,
+        reconnectionAttempts: 3,
+        path: '/socket.io/', // Explicit path
+        autoConnect: true,
+        withCredentials: false
       });
       
       setSocket(newSocket);
