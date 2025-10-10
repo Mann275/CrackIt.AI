@@ -772,11 +772,11 @@ const GoalsSetup = ({ onComplete }) => {
                   console.log('Domain selected:', e.target.value); // Debug log
                   setGoals({...goals, preferred_domain: e.target.value});
                 }}
-                className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white cursor-pointer transition-all duration-200 text-slate-700 font-medium shadow-sm hover:border-slate-300"
+                className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 cursor-pointer transition-all duration-200 text-slate-700 font-medium shadow-sm hover:border-slate-300"
                 style={{ 
                   zIndex: 1000, 
                   position: 'relative',
-                  background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                  background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
                   boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
                 }}
               >
