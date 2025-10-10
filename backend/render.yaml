@@ -15,4 +15,4 @@ build:
     - key: GEMINI_API_KEY
       sync: false
     - key: CORS_ORIGINS
-      value: https://frontend-f1lh.onrender.com
+      value: https://crackit-ai-frontend.onrender.com,https://frontend-f1lh.onrender.com

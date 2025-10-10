@@ -37,11 +37,12 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24 * 60  # 30 days
 # Security
 security = HTTPBearer()
 
-# SocketIO setup
+# SocketIO setup with enhanced configuration for production
 sio = socketio.AsyncServer(
     async_mode='asgi',
     cors_allowed_origins=[
-        "https://frontend-f1lh.onrender.com",
+        "https://crackit-ai-frontend.onrender.com",
+        "https://frontend-f1lh.onrender.com", 
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "*"
@@ -50,7 +51,10 @@ sio = socketio.AsyncServer(
     engineio_logger=True,
     ping_timeout=60,
     ping_interval=25,
-    transports=['polling', 'websocket']  # Explicitly enable both transports
+    transports=['polling', 'websocket'],  # Explicitly enable both transports
+    max_http_buffer_size=1000000,  # Increase buffer size for production
+    allow_upgrades=True,  # Allow transport upgrades
+    compression=True  # Enable compression
 )
 
 # Create the main FastAPI app
@@ -62,6 +66,7 @@ main_app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
     allow_origins=[
+        "https://crackit-ai-frontend.onrender.com",
         "https://frontend-f1lh.onrender.com",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
@@ -921,6 +926,7 @@ async def socket_debug():
         "socket_io_configured": sio is not None,
         "transport_modes": ["polling", "websocket"],
         "cors_origins": [
+            "https://crackit-ai-frontend.onrender.com",
             "https://frontend-f1lh.onrender.com",
             "http://localhost:3000",
             "http://127.0.0.1:3000",
@@ -929,6 +935,16 @@ async def socket_debug():
         "socketio_path": "socket.io",
         "async_mode": "asgi"
     }
+
+# Additional Socket.IO debug endpoint for production
+@main_app.get("/socket.io/")
+async def socket_io_debug():
+    return {"message": "Socket.IO endpoint is available", "transport": "polling"}
+
+# Handle OPTIONS requests for Socket.IO
+@main_app.options("/socket.io/")
+async def socket_io_options():
+    return {"status": "ok"}
 
 # Make sure both apps are available for different deployment scenarios
 if __name__ == "__main__":
