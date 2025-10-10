@@ -666,11 +666,16 @@ const GoalsSetup = ({ onComplete }) => {
 
   const fetchOptions = async () => {
     try {
+      console.log('🔍 Fetching options from API...');
       const [companiesRes, domainsRes, languagesRes] = await Promise.all([
         axios.get(`${API}/companies`),
         axios.get(`${API}/domains`),
         axios.get(`${API}/languages`)
       ]);
+      
+      console.log('📊 Domains received:', domainsRes.data.domains);
+      console.log('🏢 Companies received:', companiesRes.data.companies);
+      console.log('💻 Languages received:', languagesRes.data.languages);
       
       setCompanies(companiesRes.data.companies);
       setDomains(domainsRes.data.domains);
@@ -721,18 +726,35 @@ const GoalsSetup = ({ onComplete }) => {
               </div>
             </div>
 
-            <div>
+            <div style={{ position: 'relative', zIndex: 10 }}>
               <Label htmlFor="domain">Preferred Domain</Label>
-              <Select value={goals.preferred_domain} onValueChange={(value) => setGoals({...goals, preferred_domain: value})}>
-                <SelectTrigger>
+              {console.log('🎯 Rendering domain select with domains:', domains)}
+              <Select 
+                value={goals.preferred_domain} 
+                onValueChange={(value) => {
+                  console.log('🔄 Domain selected:', value);
+                  setGoals({...goals, preferred_domain: value});
+                }}
+              >
+                <SelectTrigger 
+                  onClick={() => console.log('🖱️ Select trigger clicked!')}
+                  style={{ backgroundColor: 'white', border: '1px solid #d1d5db' }}
+                >
                   <SelectValue placeholder="Select your preferred domain" />
                 </SelectTrigger>
-                <SelectContent>
-                  {domains.map(domain => (
+                <SelectContent side="bottom" align="start">
+                  {domains.length > 0 ? domains.map(domain => (
                     <SelectItem key={domain} value={domain}>{domain}</SelectItem>
-                  ))}
+                  )) : (
+                    <SelectItem value="loading" disabled>Loading domains...</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
+              
+              {/* Debug info */}
+              <div className="text-xs text-gray-500 mt-1">
+                Domains loaded: {domains.length} | Selected: {goals.preferred_domain || 'None'}
+              </div>
             </div>
 
             <div>
