@@ -43,13 +43,30 @@ import {
 const BACKEND_URL = process.env.REACT_APP_API_URL || process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8000';
 const API = `${BACKEND_URL}/api`;
 
-// Debug: Log the URLs being used (only in development)
+// Clean console and filter WebSocket errors (only in development)
 if (process.env.NODE_ENV === 'development') {
-  console.log('🔧 Debug Info:');
-  console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
-  console.log('REACT_APP_BACKEND_URL:', process.env.REACT_APP_BACKEND_URL);
-  console.log('BACKEND_URL:', BACKEND_URL);
-  console.log('API:', API);
+  // Filter out annoying WebSocket console errors
+  const originalError = console.error;
+  console.error = function(...args) {
+    const message = args.join(' ');
+    // Block WebSocket connection error messages
+    if (message.includes('WebSocket connection') || 
+        message.includes('localhost:3001') || 
+        message.includes('/ws') ||
+        message.includes('WebSocketClient')) {
+      return; // Don't show these errors
+    }
+    originalError.apply(console, args);
+  };
+  
+  // Clear previous console messages
+  setTimeout(() => {
+    console.clear();
+    console.log('🚀 CrackIt.AI - Clean Development Mode');
+    console.log('📡 Backend:', BACKEND_URL);
+    console.log('🔗 API Endpoint:', API);
+    console.log('✅ App loaded - Console cleaned');
+  }, 1500);
 }
 
 // Auth Context
