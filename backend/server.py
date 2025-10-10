@@ -843,8 +843,8 @@ async def root():
 async def health_check():
     try:
         # Test database connection
-        await db.admin.command('ping')
-        return {"status": "healthy", "database": "connected"}
+        await client.admin.command('ping')
+        return {"status": "healthy", "database": "connected", "db_name": db.name}
     except Exception as e:
         return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
 
