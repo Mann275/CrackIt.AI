@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dropdown Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        select { width: 300px; padding: 10px; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Dropdown Test</h2>
+    
+    <label for="basic-select">Basic HTML Select:</label><br>
+    <select id="basic-select">
+        <option value="">Select a domain</option>
+        <option value="fullstack">Full Stack Development</option>
+        <option value="frontend">Frontend Development</option>
+        <option value="backend">Backend Development</option>
+        <option value="mobile">Mobile Development</option>
+        <option value="datascience">Data Science</option>
+    </select>
+    
+    <br><br>
+    <p>Click on the dropdown above to test if basic selects work.</p>
+    
+    <script>
+        document.getElementById('basic-select').addEventListener('change', function(e) {
+            console.log('Selected:', e.target.value);
+            alert('Selected: ' + e.target.value);
+        });
+    </script>
+</body>
+</html>

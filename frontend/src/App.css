@@ -100,7 +100,9 @@ input::-webkit-outer-spin-button {
 [role="listbox"],
 [role="option"],
 .select-content,
-.select-item {
+.select-item,
+select,
+option {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
@@ -108,15 +110,55 @@ input::-webkit-outer-spin-button {
   z-index: 9999 !important;
 }
 
+/* Enhanced styling for HTML select elements */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px !important;
+}
+
+select:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.1), 0 2px 4px 0 rgba(0, 0, 0, 0.06) !important;
+}
+
+select:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px 0 rgba(249, 115, 22, 0.2), 0 2px 4px 0 rgba(0, 0, 0, 0.06) !important;
+}
+
+select option {
+  padding: 12px 16px !important;
+  background: #f8fafc !important;
+  color: #334155 !important;
+  font-weight: 500 !important;
+  border: none !important;
+  transition: all 0.2s ease !important;
+}
+
+select option:hover {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+  color: white !important;
+}
+
+select option:checked, select option:selected {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+  color: white !important;
+  font-weight: 600 !important;
+}
+
 /* Force hide any accidentally positioned elements but allow dropdowns */
-*[style*="position: absolute"]:not([data-radix-select-content]):not([data-radix-dropdown-menu-content]),
-*[style*="position: fixed"]:not([data-radix-select-content]):not([data-radix-dropdown-menu-content]) {
+*[style*="position: absolute"]:not([data-radix-select-content]):not([data-radix-dropdown-menu-content]):not(select):not(option),
+*[style*="position: fixed"]:not([data-radix-select-content]):not([data-radix-dropdown-menu-content]):not(select):not(option) {
   z-index: -1 !important;
 }
 
 /* Specifically target potential issue elements but allow legitimate dropdowns */
-div[style*="position: absolute"][style*="background"]:not([data-radix-select-content]):not([data-radix-dropdown-menu-content]),
-div[style*="box-shadow"]:not(.card):not(.shadow):not([data-radix-select-content]) {
+div[style*="position: absolute"][style*="background"]:not([data-radix-select-content]):not([data-radix-dropdown-menu-content]):not(select):not(option),
+div[style*="box-shadow"]:not(.card):not(.shadow):not([data-radix-select-content]):not(select):not(option) {
   display: none !important;
 }
 

@@ -694,7 +694,11 @@ const GoalsSetup = ({ onComplete }) => {
     tech_stack: []
   });
   const [companies, setCompanies] = useState([]);
-  const [domains, setDomains] = useState([]);
+  const [domains, setDomains] = useState([
+    "Full Stack Development", "Frontend Development", "Backend Development",
+    "Mobile Development", "Data Science", "Machine Learning", "DevOps",
+    "Cloud Computing", "Cybersecurity", "Game Development", "UI/UX Design"
+  ]);
   const [languages, setLanguages] = useState([]);
 
   useEffect(() => {
@@ -709,6 +713,7 @@ const GoalsSetup = ({ onComplete }) => {
         axios.get(`${API}/languages`)
       ]);
       
+      console.log('Domains fetched:', domainsRes.data.domains); // Debug log
       setCompanies(companiesRes.data.companies);
       setDomains(domainsRes.data.domains);
       setLanguages(languagesRes.data.languages);
@@ -758,37 +763,32 @@ const GoalsSetup = ({ onComplete }) => {
               </div>
             </div>
 
-            <div className="space-y-2" style={{ position: 'relative', zIndex: 1000 }}>
+            <div className="space-y-2">
               <Label htmlFor="domain">Preferred Domain</Label>
-              <Select 
+              <select 
+                id="domain"
                 value={goals.preferred_domain} 
-                onValueChange={(value) => {
-                  console.log('Domain selected:', value); // Debug log
-                  setGoals({...goals, preferred_domain: value});
+                onChange={(e) => {
+                  console.log('Domain selected:', e.target.value); // Debug log
+                  setGoals({...goals, preferred_domain: e.target.value});
+                }}
+                className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white cursor-pointer transition-all duration-200 text-slate-700 font-medium shadow-sm hover:border-slate-300"
+                style={{ 
+                  zIndex: 1000, 
+                  position: 'relative',
+                  background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                  boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
                 }}
               >
-                <SelectTrigger className="w-full" style={{ zIndex: 1000 }}>
-                  <SelectValue placeholder="Select your preferred domain" />
-                </SelectTrigger>
-                <SelectContent 
-                  position="popper" 
-                  sideOffset={4}
-                  style={{ zIndex: 9999, backgroundColor: 'white', border: '1px solid #ccc' }}
-                  className="max-h-60 overflow-y-auto"
-                >
-                  {domains.length > 0 ? domains.map(domain => (
-                    <SelectItem 
-                      key={domain} 
-                      value={domain}
-                      className="cursor-pointer hover:bg-gray-100 px-3 py-2"
-                    >
-                      {domain}
-                    </SelectItem>
-                  )) : (
-                    <SelectItem value="loading" disabled>Loading domains...</SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
+                <option value="">Select your preferred domain</option>
+                {domains.length > 0 ? domains.map(domain => (
+                  <option key={domain} value={domain}>
+                    {domain}
+                  </option>
+                )) : (
+                  <option value="" disabled>Loading domains...</option>
+                )}
+              </select>
               
               {/* Debug info */}
               <div className="text-xs text-gray-500">
@@ -1767,7 +1767,11 @@ const ProfileView = ({ setSetupStep }) => {
   const [survey, setSurvey] = useState(null);
   const [editingGoals, setEditingGoals] = useState(false);
   const [companies, setCompanies] = useState([]);
-  const [domains, setDomains] = useState([]);
+  const [domains, setDomains] = useState([
+    "Full Stack Development", "Frontend Development", "Backend Development",
+    "Mobile Development", "Data Science", "Machine Learning", "DevOps",
+    "Cloud Computing", "Cybersecurity", "Game Development", "UI/UX Design"
+  ]);
   const [languages, setLanguages] = useState([]);
 
   useEffect(() => {
@@ -1790,6 +1794,7 @@ const ProfileView = ({ setSetupStep }) => {
       setGoals(goalsRes.data);
       setSurvey(surveyRes.data);
       setCompanies(companiesRes.data.companies || []);
+      console.log('Profile domains loaded:', domainsRes.data.domains || []); // Debug log
       setDomains(domainsRes.data.domains || []);
       setLanguages(languagesRes.data.languages || []);
     } catch (error) {
@@ -1856,16 +1861,26 @@ const ProfileView = ({ setSetupStep }) => {
 
         <div>
           <Label htmlFor="domain">Preferred Domain</Label>
-          <Select value={editGoals.preferred_domain} onValueChange={(value) => setEditGoals({...editGoals, preferred_domain: value})}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select your preferred domain" />
-            </SelectTrigger>
-            <SelectContent>
-              {domains.map(domain => (
-                <SelectItem key={domain} value={domain}>{domain}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <select 
+            id="domain"
+            value={editGoals.preferred_domain} 
+            onChange={(e) => {
+              console.log('Profile domain selected:', e.target.value); // Debug log
+              setEditGoals({...editGoals, preferred_domain: e.target.value});
+            }}
+            className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 cursor-pointer transition-all duration-200 text-slate-700 font-medium shadow-sm hover:border-slate-300"
+            style={{ 
+              zIndex: 1000, 
+              position: 'relative',
+              background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
+            }}
+          >
+            <option value="">Select your preferred domain</option>
+            {domains.map(domain => (
+              <option key={domain} value={domain}>{domain}</option>
+            ))}
+          </select>
         </div>
 
         <div>
