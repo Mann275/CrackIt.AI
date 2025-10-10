@@ -171,17 +171,9 @@ const AuthPage = () => {
   const { login, register, user } = useAuth();
   const [currentView, setCurrentView] = useState('home'); // 'home', 'features', 'login', 'register'
   
-  // SECURITY: Don't render AuthPage if user is already logged in
-  useEffect(() => {
-    if (user) {
-      console.warn('🚫 AuthPage blocked - user is already logged in');
-      return;
-    }
-  }, [user]);
-  
   // Don't render if user is logged in
   if (user) {
-    return null;
+    return null; // Silently block - no console spam needed
   }
   const [formData, setFormData] = useState({
     email: '',
@@ -1553,15 +1545,15 @@ const ChatRoom = () => {
   useEffect(() => {
     if (selectedCompany) {
       fetchChatHistory();
-      if (socket) {
-        socket.emit('join_room', {
-          company: selectedCompany,
-          user_id: user?.id,
-          user_name: user?.name
-        });
-      }
+      
+      // Auto-refresh messages every 5 seconds for real-time feel
+      const interval = setInterval(() => {
+        fetchChatHistory();
+      }, 5000);
+      
+      return () => clearInterval(interval);
     }
-  }, [selectedCompany, socket, user]);
+  }, [selectedCompany, user]);
 
   const fetchCompanies = async () => {
     try {
@@ -1575,16 +1567,26 @@ const ChatRoom = () => {
   const fetchChatHistory = async () => {
     try {
       const response = await axios.get(`${API}/chatrooms/${selectedCompany}/messages`);
-      setMessages(response.data);
+      setMessages(response.data || []);
     } catch (error) {
       console.error('Failed to fetch chat history:', error);
+      // Set some default messages if backend fails
+      setMessages([
+        {
+          id: '1',
+          user_name: 'System',
+          message: `Welcome to ${selectedCompany} community! Start the conversation.`,
+          timestamp: new Date().toISOString(),
+          company: selectedCompany
+        }
+      ]);
     }
   };
 
   const sendMessage = async () => {
     if (newMessage.trim() && connected) {
       try {
-        // Send message via REST API
+        // Send message to backend first
         const messageData = {
           company: selectedCompany,
           message: newMessage,
@@ -1592,24 +1594,23 @@ const ChatRoom = () => {
           user_name: user?.name
         };
         
-        // Add message to local state immediately
-        const newMsg = {
-          id: Date.now().toString(),
-          user_name: user?.name,
-          message: newMessage,
-          timestamp: new Date().toISOString(),
-          company: selectedCompany
-        };
+        // Save message to backend
+        const response = await axios.post(`${API}/chat/send`, messageData);
         
-        setMessages(prev => [...prev, newMsg]);
-        setNewMessage('');
-        
-        // Send to backend (optional - can implement later)
-        // await axios.post(`${API}/chat/send`, messageData);
+        // If successful, add to local state
+        if (response.data) {
+          setMessages(prev => [...prev, response.data]);
+          setNewMessage('');
+          // No toast notification - clean UX
+        }
         
       } catch (error) {
         console.error('Message send error:', error);
-        toast({ title: "Error", description: "Failed to send message", variant: "destructive" });
+        toast({ 
+          title: "Error", 
+          description: "Failed to send message. Please try again.", 
+          variant: "destructive" 
+        });
       }
     }
   };

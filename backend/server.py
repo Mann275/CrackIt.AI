@@ -781,6 +781,32 @@ async def get_chat_history(company: str, limit: int = 100):
     messages = await db.chat_messages.find({"company": company}).sort("timestamp", -1).limit(limit).to_list(limit)
     return [ChatMessage(**msg) for msg in reversed(messages)]
 
+class ChatMessageRequest(BaseModel):
+    company: str
+    message: str
+    user_id: str
+    user_name: str
+
+@api_router.post("/chat/send", response_model=ChatMessage)
+async def send_chat_message(
+    request: ChatMessageRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Send a message to a company chat room"""
+    chat_message = ChatMessage(
+        id=str(uuid.uuid4()),
+        user_id=request.user_id,
+        user_name=request.user_name,
+        company=request.company,
+        message=request.message,
+        timestamp=datetime.now(timezone.utc)
+    )
+    
+    # Save to database
+    await db.chat_messages.insert_one(chat_message.dict())
+    
+    return chat_message
+
 # ===== SOCKET.IO EVENTS =====
 
 @sio.event
