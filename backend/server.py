@@ -67,8 +67,19 @@ main_app.add_middleware(
         "http://127.0.0.1:3000",
         "*"  # Allow all origins for development
     ],
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=[
+        "Accept",
+        "Accept-Language",
+        "Content-Language",
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "Origin",
+        "Access-Control-Request-Method",
+        "Access-Control-Request-Headers",
+    ],
+    expose_headers=["*"]
 )
 
 # Create socket app that combines FastAPI with SocketIO
@@ -333,22 +344,37 @@ async def get_goals(current_user: User = Depends(get_current_user)):
 
 @api_router.post("/survey", response_model=SurveyResponse)
 async def submit_survey(survey_data: dict, current_user: User = Depends(get_current_user)):
-    survey = SurveyResponse(user_id=current_user.id, **survey_data)
-    
-    # Check if survey already exists for this user
-    existing_survey = await db.surveys.find_one({"user_id": current_user.id})
-    
-    if existing_survey:
-        # Update existing survey
-        await db.surveys.update_one(
-            {"user_id": current_user.id},
-            {"$set": survey.dict()}
-        )
-    else:
-        # Insert new survey
-        await db.surveys.insert_one(survey.dict())
-    
-    return survey
+    try:
+        logger.info(f"Survey submission from user {current_user.id}: {survey_data}")
+        
+        # Remove id if present to avoid conflicts with model's auto-generated ID
+        clean_data = {k: v for k, v in survey_data.items() if k not in ['id', 'user_id']}
+        
+        # Check if survey already exists for this user
+        existing_survey = await db.surveys.find_one({"user_id": current_user.id})
+        
+        if existing_survey:
+            # Update existing survey - preserve the existing ID and user_id
+            survey = SurveyResponse(
+                id=existing_survey["id"], 
+                user_id=current_user.id, 
+                **clean_data
+            )
+            await db.surveys.update_one(
+                {"user_id": current_user.id},
+                {"$set": survey.dict()}
+            )
+            logger.info(f"Updated existing survey for user {current_user.id}")
+        else:
+            # Create new survey with auto-generated ID
+            survey = SurveyResponse(user_id=current_user.id, **clean_data)
+            await db.surveys.insert_one(survey.dict())
+            logger.info(f"Created new survey for user {current_user.id}")
+        
+        return survey
+    except Exception as e:
+        logger.error(f"Survey submission error for user {current_user.id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Survey submission failed: {str(e)}")
 
 @api_router.get("/survey", response_model=Optional[SurveyResponse])
 async def get_survey(current_user: User = Depends(get_current_user)):
