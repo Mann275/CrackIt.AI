@@ -1527,8 +1527,11 @@ const ChatRoom = () => {
         transports: ['polling', 'websocket'], // Try polling first, then websocket
         upgrade: true,
         rememberUpgrade: false, // Don't remember upgrade to avoid cached issues
-        timeout: 5000,
-        forceNew: true
+        timeout: 10000, // Increased timeout for production
+        forceNew: true,
+        reconnection: true,
+        reconnectionDelay: 2000,
+        reconnectionAttempts: 5
       });
       
       setSocket(newSocket);
@@ -1547,8 +1550,17 @@ const ChatRoom = () => {
       newSocket.on('connect_error', (error) => {
         console.error('❌ Socket.IO Connection error:', error);
         console.log('🔧 Trying to connect to:', BACKEND_URL);
-        console.log('🔧 Available transports:', newSocket.io.engine.transports);
         setConnected(false);
+        
+        // After 5 failed attempts, stop trying and show offline mode
+        if (error.message.includes('xhr poll error') || error.message.includes('405')) {
+          console.warn('🚫 Chat service temporarily unavailable - continuing in offline mode');
+          setTimeout(() => {
+            if (newSocket) {
+              newSocket.disconnect();
+            }
+          }, 5000);
+        }
       });
 
       newSocket.on('new_message', (messageData) => {

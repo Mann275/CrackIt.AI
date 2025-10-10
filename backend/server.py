@@ -40,11 +40,17 @@ security = HTTPBearer()
 # SocketIO setup
 sio = socketio.AsyncServer(
     async_mode='asgi',
-    cors_allowed_origins="*",  # Allow all origins for now
+    cors_allowed_origins=[
+        "https://frontend-f1lh.onrender.com",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "*"
+    ],
     logger=True,
     engineio_logger=True,
     ping_timeout=60,
-    ping_interval=25
+    ping_interval=25,
+    transports=['polling', 'websocket']  # Explicitly enable both transports
 )
 
 # Create the main FastAPI app
@@ -66,7 +72,7 @@ main_app.add_middleware(
 )
 
 # Create socket app that combines FastAPI with SocketIO
-socket_app = socketio.ASGIApp(sio, main_app)
+socket_app = socketio.ASGIApp(sio, main_app, socketio_path='socket.io')
 
 # ===== MODELS =====
 
@@ -828,8 +834,11 @@ from contextlib import asynccontextmanager
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup code here
+    logger.info("Starting CrackIt.AI server...")
+    logger.info(f"Socket.IO server configured with transports: {sio.transport}")
     yield
     # Shutdown code here
+    logger.info("Shutting down CrackIt.AI server...")
     client.close()
 
 # Update the main_app with lifespan instead of creating a new one
@@ -848,6 +857,15 @@ async def preflight_handler(request, full_path: str):
         }
     )
 
+# Add specific Socket.IO endpoint handling
+@main_app.get("/socket.io/")
+async def socket_io_endpoint():
+    return {"status": "Socket.IO endpoint ready"}
+
+@main_app.post("/socket.io/")
+async def socket_io_post():
+    return {"status": "Socket.IO POST endpoint ready"}
+
 # Add health check endpoint
 @main_app.get("/")
 async def root():
@@ -864,3 +882,29 @@ async def health_check():
 
 # Export the socket app for the ASGI server
 app = socket_app
+
+# Add explicit Socket.IO health check endpoint
+@main_app.get("/socket.io/health")
+async def socket_health():
+    return {"socket_io": "ready", "status": "ok"}
+
+# Debug route to check Socket.IO status
+@main_app.get("/socket-debug")
+async def socket_debug():
+    return {
+        "socket_io_configured": sio is not None,
+        "transport_modes": ["polling", "websocket"],
+        "cors_origins": [
+            "https://frontend-f1lh.onrender.com",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "*"
+        ],
+        "socketio_path": "socket.io",
+        "async_mode": "asgi"
+    }
+
+# Make sure both apps are available for different deployment scenarios
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000, ws="websockets")
