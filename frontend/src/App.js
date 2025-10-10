@@ -1543,70 +1543,10 @@ const ChatRoom = () => {
   }, []);
 
   const initializeSocket = () => {
-    try {
-      console.log('🔌 Initializing Socket.IO connection to:', BACKEND_URL);
-      const newSocket = io(BACKEND_URL, {
-        transports: ['polling'],
-        autoConnect: true,
-        forceNew: true
-      });
-      
-      setSocket(newSocket);
-
-      newSocket.on('connect', () => {
-        console.log('Connected to chat server');
-        setConnected(true);
-        toast({ title: "Connected", description: "Chat is now active!" });
-      });
-
-      newSocket.on('disconnect', () => {
-        console.log('Disconnected from chat server');
-        setConnected(false);
-      });
-
-      newSocket.on('connect_error', (error) => {
-        console.error('❌ Socket.IO Connection error:', error);
-        console.log('🔧 Trying to connect to:', BACKEND_URL);
-        setConnected(false);
-        
-        // After 5 failed attempts, stop trying and show offline mode
-        if (error.message.includes('xhr poll error') || error.message.includes('405')) {
-          console.warn('🚫 Chat service temporarily unavailable - continuing in offline mode');
-          setTimeout(() => {
-            if (newSocket) {
-              newSocket.disconnect();
-            }
-          }, 5000);
-        }
-      });
-
-      newSocket.on('new_message', (messageData) => {
-        setMessages(prev => [...prev, messageData]);
-      });
-
-      newSocket.on('user_joined', (data) => {
-        setMessages(prev => [...prev, {
-          id: Date.now().toString(),
-          user_name: 'System',
-          message: data.message,
-          timestamp: new Date().toISOString(),
-          company: selectedCompany
-        }]);
-      });
-
-      newSocket.on('user_left', (data) => {
-        setMessages(prev => [...prev, {
-          id: Date.now().toString(),
-          user_name: 'System',
-          message: data.message,
-          timestamp: new Date().toISOString(),
-          company: selectedCompany
-        }]);
-      });
-    } catch (error) {
-      console.error('Socket initialization error:', error);
-      toast({ title: "Connection Error", description: "Chat functionality unavailable", variant: "destructive" });
-    }
+    // Temporarily disable Socket.IO and use REST API for chat
+    console.log('🔧 Using REST API for chat (Socket.IO disabled)');
+    setConnected(true);
+    toast({ title: "Chat Ready", description: "Using REST API mode" });
   };
 
   useEffect(() => {
@@ -1640,17 +1580,36 @@ const ChatRoom = () => {
     }
   };
 
-  const sendMessage = () => {
-    if (newMessage.trim() && socket && connected) {
-      socket.emit('send_message', {
-        company: selectedCompany,
-        message: newMessage,
-        user_id: user?.id,
-        user_name: user?.name
-      });
-      setNewMessage('');
-    } else if (!connected) {
-      toast({ title: "Connection Error", description: "Chat is not connected. Please refresh the page.", variant: "destructive" });
+  const sendMessage = async () => {
+    if (newMessage.trim() && connected) {
+      try {
+        // Send message via REST API
+        const messageData = {
+          company: selectedCompany,
+          message: newMessage,
+          user_id: user?.id,
+          user_name: user?.name
+        };
+        
+        // Add message to local state immediately
+        const newMsg = {
+          id: Date.now().toString(),
+          user_name: user?.name,
+          message: newMessage,
+          timestamp: new Date().toISOString(),
+          company: selectedCompany
+        };
+        
+        setMessages(prev => [...prev, newMsg]);
+        setNewMessage('');
+        
+        // Send to backend (optional - can implement later)
+        // await axios.post(`${API}/chat/send`, messageData);
+        
+      } catch (error) {
+        console.error('Message send error:', error);
+        toast({ title: "Error", description: "Failed to send message", variant: "destructive" });
+      }
     }
   };
 

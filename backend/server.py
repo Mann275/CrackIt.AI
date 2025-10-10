@@ -13,6 +13,7 @@ from typing import List, Optional, Dict, Any # type: ignore
 from pydantic import BaseModel, Field, EmailStr # type: ignore
 from jose import JWTError, jwt # type: ignore
 import socketio # type: ignore
+import uvicorn # type: ignore
 
 # Load environment variables
 load_dotenv()
@@ -76,7 +77,8 @@ main_app.add_middleware(
 )
 
 # Create socket app that combines FastAPI with SocketIO
-socket_app = socketio.ASGIApp(sio, main_app, socketio_path="socket.io")
+# Use default path for better Render compatibility
+socket_app = socketio.ASGIApp(sio, main_app)
 
 # ===== MODELS =====
 
@@ -932,5 +934,7 @@ async def socket_debug():
 
 # Make sure both apps are available for different deployment scenarios
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, ws="websockets")
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=False)
+
+# Render.com deployment - Direct ASGI app export
+application = socket_app
