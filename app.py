@@ -1,4 +1,4 @@
-from backend.server import app
+from backend.server import main_app as app
 
-# This file just re-exports the app from backend.server
-# so that Render can find it easily
+# This file exports the main_app from backend.server as 'app'
+# so that Render can find it easily with proper routes included

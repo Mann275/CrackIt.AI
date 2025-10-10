@@ -17,9 +17,16 @@ import socketio # type: ignore
 load_dotenv()
 
 # MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+mongo_url = os.environ.get('MONGO_URL')
+if not mongo_url:
+    raise ValueError("MONGO_URL environment variable is required")
+
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db_name = os.environ.get('DB_NAME', 'crackit')
+db = client[db_name]
+
+print(f"MongoDB connection initialized with URL: {mongo_url[:20]}...")
+print(f"Database name: {db_name}")
 
 # JWT Configuration
 SECRET_KEY = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
@@ -826,6 +833,20 @@ async def lifespan(app: FastAPI):
 
 main_app = FastAPI(title="CrackIt.AI API", version="1.0.0", lifespan=lifespan)
 
+
+# Add health check endpoint
+@main_app.get("/")
+async def root():
+    return {"message": "CrackIt.AI API is running!", "status": "healthy"}
+
+@main_app.get("/health")
+async def health_check():
+    try:
+        # Test database connection
+        await db.admin.command('ping')
+        return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
 
 # Export the socket app for the ASGI server
 app = socket_app
