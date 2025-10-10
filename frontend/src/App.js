@@ -1522,10 +1522,13 @@ const ChatRoom = () => {
 
   const initializeSocket = () => {
     try {
+      console.log('🔌 Initializing Socket.IO connection to:', BACKEND_URL);
       const newSocket = io(BACKEND_URL, {
-        transports: ['websocket', 'polling'],
+        transports: ['polling', 'websocket'], // Try polling first, then websocket
         upgrade: true,
-        rememberUpgrade: true
+        rememberUpgrade: false, // Don't remember upgrade to avoid cached issues
+        timeout: 5000,
+        forceNew: true
       });
       
       setSocket(newSocket);
@@ -1542,7 +1545,9 @@ const ChatRoom = () => {
       });
 
       newSocket.on('connect_error', (error) => {
-        console.error('Connection error:', error);
+        console.error('❌ Socket.IO Connection error:', error);
+        console.log('🔧 Trying to connect to:', BACKEND_URL);
+        console.log('🔧 Available transports:', newSocket.io.engine.transports);
         setConnected(false);
       });
 
