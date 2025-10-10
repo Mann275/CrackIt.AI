@@ -1,6 +1,7 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, status # type: ignore
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials# type: ignore
 from fastapi.middleware.cors import CORSMiddleware # type: ignore
+from fastapi.responses import JSONResponse # type: ignore
 from dotenv import load_dotenv # type: ignore
 from motor.motor_asyncio import AsyncIOMotorClient # type: ignore
 import os
@@ -33,17 +34,17 @@ SECRET_KEY = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production'
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24 * 60  # 30 days
 
-# Create FastAPI app
-app = FastAPI(title="CrackIt.AI API", version="1.0.0")
-api_router = APIRouter(prefix="/api")
-
 # Security
 security = HTTPBearer()
 
 # SocketIO setup
 sio = socketio.AsyncServer(
     async_mode='asgi',
-    cors_allowed_origins="*",
+    cors_allowed_origins=[
+        "https://frontend-f1lh.onrender.com",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
+    ],
     logger=True,
     engineio_logger=True
 )
@@ -56,13 +57,15 @@ api_router = APIRouter(prefix="/api")
 main_app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
+    allow_origins=[
+        "https://frontend-f1lh.onrender.com",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "*"  # Allow all origins for development
+    ],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
-
-# Include API routes
-main_app.include_router(api_router)
 
 # Create socket app that combines FastAPI with SocketIO
 socket_app = socketio.ASGIApp(sio, main_app)
@@ -831,8 +834,21 @@ async def lifespan(app: FastAPI):
     # Shutdown code here
     client.close()
 
-main_app = FastAPI(title="CrackIt.AI API", version="1.0.0", lifespan=lifespan)
+# Update the main_app with lifespan instead of creating a new one
+main_app.router.lifespan_context = lifespan
 
+
+# Add CORS preflight handler
+@main_app.options("/{full_path:path}")
+async def preflight_handler(request, full_path: str):
+    return JSONResponse(
+        content={},
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
 
 # Add health check endpoint
 @main_app.get("/")
