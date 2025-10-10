@@ -37,18 +37,12 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24 * 60  # 30 days
 # Security
 security = HTTPBearer()
 
-# SocketIO setup with enhanced configuration for production
+# SocketIO setup with minimal configuration for Render
 sio = socketio.AsyncServer(
-    async_mode='asgi',
-    cors_allowed_origins="*",  # Allow all origins for production debugging
-    logger=True,  # Enable logging for debugging
-    engineio_logger=True,  # Enable engine logging
-    ping_timeout=60,
-    ping_interval=25,
-    transports=['polling'],  # Use only polling for Render compatibility
-    max_http_buffer_size=100000,
-    allow_upgrades=False,  # Disable upgrades for stability
-    compression=False  # Disable compression for compatibility
+    cors_allowed_origins="*",
+    logger=False,
+    engineio_logger=False,
+    transports=['polling']
 )
 
 # Create the main FastAPI app
@@ -82,7 +76,7 @@ main_app.add_middleware(
 )
 
 # Create socket app that combines FastAPI with SocketIO
-socket_app = socketio.ASGIApp(sio, main_app)
+socket_app = socketio.ASGIApp(sio, main_app, socketio_path="socket.io")
 
 # ===== MODELS =====
 
@@ -906,6 +900,11 @@ async def health_check():
 
 # Export the socket app for the ASGI server
 app = socket_app
+
+# Debug endpoint to test if app is working
+@main_app.get("/test-socket")
+async def test_socket():
+    return {"message": "Socket.IO app is mounted", "status": "ok"}
 
 # Add explicit Socket.IO health check endpoint
 @main_app.get("/socket.io/health")

@@ -1546,16 +1546,9 @@ const ChatRoom = () => {
     try {
       console.log('🔌 Initializing Socket.IO connection to:', BACKEND_URL);
       const newSocket = io(BACKEND_URL, {
-        transports: ['polling'], // Use only polling for production compatibility
-        upgrade: false, // Disable upgrades for stability
-        rememberUpgrade: false,
-        timeout: 30000, // Increased timeout for production
-        forceNew: true,
-        reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionAttempts: 10,
+        transports: ['polling'],
         autoConnect: true,
-        withCredentials: false
+        forceNew: true
       });
       
       setSocket(newSocket);
