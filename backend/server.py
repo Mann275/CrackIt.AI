@@ -41,10 +41,10 @@ security = HTTPBearer()
 sio = socketio.AsyncServer(
     async_mode='asgi',
     cors_allowed_origins="*",  # Allow all origins for production debugging
-    logger=False,  # Disable logging for production
-    engineio_logger=False,
-    ping_timeout=120,
-    ping_interval=60,
+    logger=True,  # Enable logging for debugging
+    engineio_logger=True,  # Enable engine logging
+    ping_timeout=60,
+    ping_interval=25,
     transports=['polling'],  # Use only polling for Render compatibility
     max_http_buffer_size=100000,
     allow_upgrades=False,  # Disable upgrades for stability
@@ -82,7 +82,7 @@ main_app.add_middleware(
 )
 
 # Create socket app that combines FastAPI with SocketIO
-socket_app = socketio.ASGIApp(sio, main_app, socketio_path='/socket.io/')
+socket_app = socketio.ASGIApp(sio, main_app, socketio_path='socket.io')
 
 # ===== MODELS =====
 
@@ -885,11 +885,11 @@ async def preflight_handler(request, full_path: str):
 # Add specific Socket.IO endpoint handling
 @main_app.get("/socket.io/")
 async def socket_io_endpoint():
-    return {"status": "Socket.IO endpoint ready"}
+    return {"status": "Socket.IO endpoint ready", "transport": "polling", "cors": "*"}
 
 @main_app.post("/socket.io/")
 async def socket_io_post():
-    return {"status": "Socket.IO POST endpoint ready"}
+    return {"status": "Socket.IO POST endpoint ready", "transport": "polling"}
 
 # Add health check endpoint
 @main_app.get("/")

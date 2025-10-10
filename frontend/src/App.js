@@ -1552,8 +1552,8 @@ const ChatRoom = () => {
         timeout: 20000, // Increased timeout for production
         forceNew: true,
         reconnection: true,
-        reconnectionDelay: 5000,
-        reconnectionAttempts: 3,
+        reconnectionDelay: 2000,
+        reconnectionAttempts: 5,
         path: '/socket.io/', // Explicit path
         autoConnect: true,
         withCredentials: false
