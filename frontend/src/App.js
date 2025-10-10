@@ -741,25 +741,43 @@ const GoalsSetup = ({ onComplete }) => {
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2" style={{ position: 'relative', zIndex: 1000 }}>
               <Label htmlFor="domain">Preferred Domain</Label>
               <Select 
                 value={goals.preferred_domain} 
                 onValueChange={(value) => {
+                  console.log('Domain selected:', value); // Debug log
                   setGoals({...goals, preferred_domain: value});
                 }}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full" style={{ zIndex: 1000 }}>
                   <SelectValue placeholder="Select your preferred domain" />
                 </SelectTrigger>
-                <SelectContent position="popper" sideOffset={4}>
+                <SelectContent 
+                  position="popper" 
+                  sideOffset={4}
+                  style={{ zIndex: 9999, backgroundColor: 'white', border: '1px solid #ccc' }}
+                  className="max-h-60 overflow-y-auto"
+                >
                   {domains.length > 0 ? domains.map(domain => (
-                    <SelectItem key={domain} value={domain}>{domain}</SelectItem>
+                    <SelectItem 
+                      key={domain} 
+                      value={domain}
+                      className="cursor-pointer hover:bg-gray-100 px-3 py-2"
+                    >
+                      {domain}
+                    </SelectItem>
                   )) : (
                     <SelectItem value="loading" disabled>Loading domains...</SelectItem>
                   )}
                 </SelectContent>
               </Select>
+              
+              {/* Debug info */}
+              <div className="text-xs text-gray-500">
+                {domains.length > 0 ? `${domains.length} domains loaded` : 'Loading domains...'}
+                {goals.preferred_domain && ` | Selected: ${goals.preferred_domain}`}
+              </div>
             </div>
 
             <div>
