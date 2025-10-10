@@ -40,21 +40,15 @@ security = HTTPBearer()
 # SocketIO setup with enhanced configuration for production
 sio = socketio.AsyncServer(
     async_mode='asgi',
-    cors_allowed_origins=[
-        "https://crackit-ai-frontend.onrender.com",
-        "https://frontend-f1lh.onrender.com", 
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "*"
-    ],
-    logger=True,
-    engineio_logger=True,
-    ping_timeout=60,
-    ping_interval=25,
-    transports=['polling', 'websocket'],  # Explicitly enable both transports
-    max_http_buffer_size=1000000,  # Increase buffer size for production
-    allow_upgrades=True,  # Allow transport upgrades
-    compression=True  # Enable compression
+    cors_allowed_origins="*",  # Allow all origins for production debugging
+    logger=False,  # Disable logging for production
+    engineio_logger=False,
+    ping_timeout=120,
+    ping_interval=60,
+    transports=['polling'],  # Use only polling for Render compatibility
+    max_http_buffer_size=100000,
+    allow_upgrades=False,  # Disable upgrades for stability
+    compression=False  # Disable compression for compatibility
 )
 
 # Create the main FastAPI app
@@ -88,7 +82,7 @@ main_app.add_middleware(
 )
 
 # Create socket app that combines FastAPI with SocketIO
-socket_app = socketio.ASGIApp(sio, main_app, socketio_path='socket.io')
+socket_app = socketio.ASGIApp(sio, main_app, socketio_path='/socket.io/')
 
 # ===== MODELS =====
 
