@@ -40,13 +40,11 @@ security = HTTPBearer()
 # SocketIO setup
 sio = socketio.AsyncServer(
     async_mode='asgi',
-    cors_allowed_origins=[
-        "https://frontend-f1lh.onrender.com",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000"
-    ],
+    cors_allowed_origins="*",  # Allow all origins for now
     logger=True,
-    engineio_logger=True
+    engineio_logger=True,
+    ping_timeout=60,
+    ping_interval=25
 )
 
 # Create the main FastAPI app
