@@ -1549,12 +1549,11 @@ const ChatRoom = () => {
         transports: ['polling'], // Use only polling for production compatibility
         upgrade: false, // Disable upgrades for stability
         rememberUpgrade: false,
-        timeout: 20000, // Increased timeout for production
+        timeout: 30000, // Increased timeout for production
         forceNew: true,
         reconnection: true,
-        reconnectionDelay: 2000,
-        reconnectionAttempts: 5,
-        path: '/socket.io/', // Explicit path
+        reconnectionDelay: 1000,
+        reconnectionAttempts: 10,
         autoConnect: true,
         withCredentials: false
       });

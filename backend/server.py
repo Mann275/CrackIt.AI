@@ -82,7 +82,7 @@ main_app.add_middleware(
 )
 
 # Create socket app that combines FastAPI with SocketIO
-socket_app = socketio.ASGIApp(sio, main_app, socketio_path='socket.io')
+socket_app = socketio.ASGIApp(sio, main_app)
 
 # ===== MODELS =====
 
@@ -882,26 +882,25 @@ async def preflight_handler(request, full_path: str):
         }
     )
 
-# Add specific Socket.IO endpoint handling
-@main_app.get("/socket.io/")
-async def socket_io_endpoint():
-    return {"status": "Socket.IO endpoint ready", "transport": "polling", "cors": "*"}
-
-@main_app.post("/socket.io/")
-async def socket_io_post():
-    return {"status": "Socket.IO POST endpoint ready", "transport": "polling"}
+# Remove explicit Socket.IO endpoints - let ASGIApp handle them automatically
 
 # Add health check endpoint
 @main_app.get("/")
 async def root():
-    return {"message": "CrackIt.AI API is running!", "status": "healthy"}
+    return {"message": "CrackIt.AI API is running!", "status": "healthy", "socketio": "enabled"}
 
 @main_app.get("/health")
 async def health_check():
     try:
         # Test database connection
         await client.admin.command('ping')
-        return {"status": "healthy", "database": "connected", "db_name": db.name}
+        return {
+            "status": "healthy", 
+            "database": "connected", 
+            "db_name": db.name,
+            "socketio_configured": sio is not None,
+            "cors_origins": "*"
+        }
     except Exception as e:
         return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
 
@@ -930,15 +929,7 @@ async def socket_debug():
         "async_mode": "asgi"
     }
 
-# Additional Socket.IO debug endpoint for production
-@main_app.get("/socket.io/")
-async def socket_io_debug():
-    return {"message": "Socket.IO endpoint is available", "transport": "polling"}
-
-# Handle OPTIONS requests for Socket.IO
-@main_app.options("/socket.io/")
-async def socket_io_options():
-    return {"status": "ok"}
+# Socket.IO endpoints handled automatically by ASGIApp
 
 # Make sure both apps are available for different deployment scenarios
 if __name__ == "__main__":
