@@ -55,8 +55,8 @@ main_app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
     allow_origins=[
-        "https://crackit-ai-frontend.onrender.com",
-        "https://frontend-f1lh.onrender.com",
+        
+        "https://crackit-ai-ueu5.onrender.com",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "*"  # Allow all origins for development
@@ -946,8 +946,8 @@ async def socket_debug():
         "socket_io_configured": sio is not None,
         "transport_modes": ["polling", "websocket"],
         "cors_origins": [
-            "https://crackit-ai-frontend.onrender.com",
-            "https://frontend-f1lh.onrender.com",
+            
+            "https://crackit-ai-ueu5.onrender.com",
             "http://localhost:3000",
             "http://127.0.0.1:3000",
             "*"
