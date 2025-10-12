@@ -617,7 +617,7 @@ const Dashboard = () => {
   const totalTasks = roadmap?.roadmap_items?.length || 0;
 
   return (
-    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-8">
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 pb-32 md:pb-8">
       <div className="text-center mb-6 sm:mb-8">
         <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-2">Your Placement Journey</h2>
         <p className="text-slate-600 text-sm sm:text-base">Track your progress and stay motivated</p>
@@ -1257,7 +1257,7 @@ const RoadmapView = () => {
   const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
   return (
-    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-8">
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 pb-32 md:pb-8">
       <div className="mb-6 sm:mb-8">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-3 sm:space-y-0">
           <div className="text-center sm:text-left flex-1">
@@ -1514,7 +1514,7 @@ const MockTests = () => {
   }
 
   return (
-    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-8">
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 pb-32 md:pb-8">
       <div className="text-center mb-6 sm:mb-8">
         <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-2">Mock Tests</h2>
         <p className="text-slate-600 text-sm sm:text-base">Practice with AI-powered assessments</p>
@@ -1699,7 +1699,7 @@ const ChatRoom = () => {
   };
 
   return (
-    <div className="p-3 sm:p-6 pb-24 md:pb-6">
+    <div className="p-3 sm:p-6 pb-32 md:pb-6">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-4 sm:mb-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-2">Company Communities</h2>
@@ -2014,7 +2014,7 @@ const ProfileView = ({ setSetupStep }) => {
   };
 
   return (
-    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-8">
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 pb-32 md:pb-8">
       <div className="text-center mb-6 sm:mb-8">
         <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-2">Profile Settings</h2>
         <p className="text-slate-600 text-sm sm:text-base">Manage your account and preferences</p>
@@ -2299,7 +2299,7 @@ const MainApp = () => {
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50">
       <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
       
-      <main className="pb-24 md:pb-8">
+      <main className="pb-32 md:pb-8">
         {activeTab === 'dashboard' && <Dashboard />}
         {activeTab === 'roadmap' && <RoadmapView />}
         {activeTab === 'tests' && <MockTests />}
