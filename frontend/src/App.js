@@ -1257,7 +1257,7 @@ const RoadmapView = () => {
   const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
   return (
-    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 pb-32 md:pb-8">
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 pb-40 md:pb-8">
       <div className="mb-6 sm:mb-8">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-3 sm:space-y-0">
           <div className="text-center sm:text-left flex-1">
