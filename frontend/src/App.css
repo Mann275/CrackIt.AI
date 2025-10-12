@@ -395,6 +395,66 @@ select:focus {
   100% { transform: rotate(360deg); }
 }
 
+/* CrackIt.AI loading logo rotation + dots animation */
+.loading-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  transform-origin: center;
+  animation: logoRotate 2.8s linear infinite;
+}
+
+.logo-icon {
+  transform-origin: center;
+  animation: logoBounce 1.6s ease-in-out infinite;
+}
+
+@keyframes logoRotate {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.02); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes logoBounce {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+  100% { transform: translateY(0); }
+}
+
+.loading-text {
+  margin-top: 6px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.loading-dots {
+  display: inline-block;
+  margin-left: 6px;
+  width: 28px;
+  text-align: left;
+}
+
+.loading-dots::after {
+  content: '.';
+  animation: dots 1.5s steps(3,end) infinite;
+}
+
+@keyframes dots {
+  0% { content: ''; }
+  33% { content: '.'; }
+  66% { content: '..'; }
+  100% { content: '...'; }
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .loading-logo, .logo-icon, .loading-dots::after {
+    animation: none !important;
+  }
+}
+
 /* Progress bar enhancements */
 .progress-bar {
   position: relative;

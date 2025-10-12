@@ -2327,10 +2327,10 @@ function App() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Brain className="h-8 w-8 text-white animate-pulse" />
+          <div className="w-20 h-20 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4 loading-logo">
+            <Brain className="h-10 w-10 text-white logo-icon" />
           </div>
-          <p className="text-slate-600">Loading CrackIt.AI...</p>
+          <p className="text-slate-600 loading-text">Loading CrackIt.AI<span className="loading-dots">...</span></p>
         </div>
       </div>
     );
