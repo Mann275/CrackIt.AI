@@ -1,18 +1,27 @@
-build:
-  type: web
-  name: crackit-backend
-  runtime: python
-  rootDir: backend
-  buildCommand: pip install -r requirements.txt
-  startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT --ws websockets --loop asyncio
-  envVars:
-    - key: MONGO_URL
-      sync: false
-    - key: DB_NAME
-      sync: false
-    - key: JWT_SECRET
-      sync: false
-    - key: GEMINI_API_KEY
-      sync: false
-    - key: CORS_ORIGINS
-      value: https://crackit-ai-ueu5.onrender.com
+services:
+  - type: web
+    name: crackit-ai-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: |
+      pip install -r requirements.txt &&
+      cd ../frontend &&
+      npm ci &&
+      npm run build &&
+      cd ../backend
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT --workers 1
+    plan: free
+    envVars:
+      - key: MONGO_URL
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://crackit-ai-ueu5.onrender.com
+      - key: NODE_ENV
+        value: production
+    staticPublishPath: ../frontend/build

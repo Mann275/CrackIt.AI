@@ -2,6 +2,7 @@ from fastapi import FastAPI, APIRouter, HTTPException, Depends, status # type: i
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials# type: ignore
 from fastapi.middleware.cors import CORSMiddleware # type: ignore
 from fastapi.responses import JSONResponse # type: ignore
+from fastapi.staticfiles import StaticFiles # type: ignore
 from dotenv import load_dotenv # type: ignore
 from motor.motor_asyncio import AsyncIOMotorClient # type: ignore
 import os
@@ -49,6 +50,35 @@ sio = socketio.AsyncServer(
 # Create the main FastAPI app
 main_app = FastAPI(title="CrackIt.AI API", version="1.0.0")
 api_router = APIRouter(prefix="/api")
+
+# Mount static files (for serving favicon and other static assets)
+import os
+frontend_build_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "build"))
+print(f"Looking for frontend build at: {frontend_build_path}")
+if os.path.exists(frontend_build_path):
+    print(f"Frontend build directory found, mounting static files")
+    # First mount the static directory for CSS/JS files
+    static_path = os.path.join(frontend_build_path, "static")
+    if os.path.exists(static_path):
+        main_app.mount("/static", StaticFiles(directory=static_path), name="static")
+        print("Mounted /static directory")
+    
+    # Mount individual favicon files
+    favicon_ico = os.path.join(frontend_build_path, "favicon.ico")
+    favicon_png = os.path.join(frontend_build_path, "favicon.png")
+    favicon_svg = os.path.join(frontend_build_path, "favicon.svg")
+    manifest_json = os.path.join(frontend_build_path, "manifest.json")
+    
+    if os.path.exists(favicon_ico):
+        print("Found favicon.ico")
+    if os.path.exists(favicon_png):
+        print("Found favicon.png")
+    if os.path.exists(favicon_svg):
+        print("Found favicon.svg")
+    if os.path.exists(manifest_json):
+        print("Found manifest.json")
+else:
+    print(f"Frontend build directory not found at {frontend_build_path}")
 
 # CORS for main app
 main_app.add_middleware(
@@ -866,8 +896,15 @@ async def send_message(sid, data):
         'company': company
     }, room=company)
 
-# Include router in app
+# Include router in app FIRST (before static files)
 main_app.include_router(api_router)
+
+# AFTER including API routes, mount the frontend as fallback
+frontend_build_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "build"))
+print(f"Final check - Frontend build path: {frontend_build_path}")
+if os.path.exists(frontend_build_path) and os.path.exists(os.path.join(frontend_build_path, "index.html")):
+    print("Mounting frontend React app as fallback")
+    main_app.mount("/", StaticFiles(directory=frontend_build_path, html=True), name="frontend")
 
 # Configure logging
 logging.basicConfig(
@@ -905,6 +942,37 @@ async def preflight_handler(request, full_path: str):
     )
 
 # Remove explicit Socket.IO endpoints - let ASGIApp handle them automatically
+
+# Add direct favicon endpoints for better compatibility
+from fastapi.responses import FileResponse
+
+@main_app.get("/favicon.ico")
+async def get_favicon_ico():
+    favicon_path = os.path.join(frontend_build_path, "favicon.ico")
+    if os.path.exists(favicon_path):
+        return FileResponse(favicon_path, media_type="image/x-icon")
+    raise HTTPException(status_code=404, detail="Favicon not found")
+
+@main_app.get("/favicon.png")
+async def get_favicon_png():
+    favicon_path = os.path.join(frontend_build_path, "favicon.png")
+    if os.path.exists(favicon_path):
+        return FileResponse(favicon_path, media_type="image/png")
+    raise HTTPException(status_code=404, detail="Favicon PNG not found")
+
+@main_app.get("/favicon.svg")
+async def get_favicon_svg():
+    favicon_path = os.path.join(frontend_build_path, "favicon.svg")
+    if os.path.exists(favicon_path):
+        return FileResponse(favicon_path, media_type="image/svg+xml")
+    raise HTTPException(status_code=404, detail="Favicon SVG not found")
+
+@main_app.get("/manifest.json")
+async def get_manifest():
+    manifest_path = os.path.join(frontend_build_path, "manifest.json")
+    if os.path.exists(manifest_path):
+        return FileResponse(manifest_path, media_type="application/json")
+    raise HTTPException(status_code=404, detail="Manifest not found")
 
 # Add health check endpoint
 @main_app.get("/")

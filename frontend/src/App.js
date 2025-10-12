@@ -488,61 +488,100 @@ const AuthPage = () => {
 // Navigation Component
 const Navigation = ({ activeTab, setActiveTab }) => {
   const { user, logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const handleLogout = () => {
     logout();
   };
+
+  const navItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: HomeIcon },
+    { id: 'roadmap', label: 'Roadmap', icon: Target },
+    { id: 'tests', label: 'Tests', icon: BookOpen },
+    { id: 'chat', label: 'Community', icon: MessageCircle },
+    { id: 'profile', label: 'Profile', icon: Settings }
+  ];
   
   return (
-    <div className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
-              <Brain className="h-6 w-6 text-white" />
-            </div>
-            <h1 className="text-xl font-bold text-slate-800">CrackIt.AI</h1>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <div className="hidden md:flex items-center space-x-1">
-              {[
-                { id: 'dashboard', label: 'Dashboard', icon: Home },
-                { id: 'roadmap', label: 'Roadmap', icon: Target },
-                { id: 'tests', label: 'Tests', icon: BookOpen },
-                { id: 'chat', label: 'Community', icon: MessageCircle },
-                { id: 'profile', label: 'Profile', icon: Settings }
-              ].map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => setActiveTab(id)}
-                  className={`relative px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 ${
-                    activeTab === id 
-                      ? 'bg-orange-100 text-orange-700 border border-orange-200' 
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span>{label}</span>
-                </button>
-              ))}
+    <>
+      {/* Top Navigation - Hidden on Mobile, Visible on Desktop */}
+      <div className="hidden md:block border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
+                <Brain className="h-6 w-6 text-white" />
+              </div>
+              <h1 className="text-xl font-bold text-slate-800">CrackIt.AI</h1>
             </div>
             
-            <div className="flex items-center space-x-3">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-gradient-to-r from-orange-500 to-red-600 text-white text-sm">
-                  {user?.name?.charAt(0) || 'U'}
-                </AvatarFallback>
-              </Avatar>
+            {/* Desktop Navigation */}
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-1">
+                {navItems.map(({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    onClick={() => setActiveTab(id)}
+                    className={`relative px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 ${
+                      activeTab === id 
+                        ? 'bg-orange-100 text-orange-700 border border-orange-200' 
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </div>
               
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center space-x-3">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-gradient-to-r from-orange-500 to-red-600 text-white text-sm">
+                    {user?.name?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Mobile Header - Simple Logo Only */}
+      <div className="md:hidden bg-white/80 backdrop-blur-sm sticky top-0 z-50 border-b border-slate-200">
+        <div className="flex items-center justify-center h-14">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
+              <Brain className="h-5 w-5 text-white" />
+            </div>
+            <h1 className="text-lg font-bold text-slate-800">CrackIt.AI</h1>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Navigation for Mobile - Higher z-index and better spacing */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-[60] shadow-lg">
+        <div className="grid grid-cols-5 h-18 py-2">
+          {navItems.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={`flex flex-col items-center justify-center space-y-1 transition-colors py-2 px-1 ${
+                activeTab === id 
+                  ? 'text-orange-600 bg-orange-50' 
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="text-xs font-medium">{label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </>
   );
 };
 
@@ -578,10 +617,10 @@ const Dashboard = () => {
   const totalTasks = roadmap?.roadmap_items?.length || 0;
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-slate-800 mb-2">Your Placement Journey</h2>
-        <p className="text-slate-600">Track your progress and stay motivated</p>
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-8">
+      <div className="text-center mb-6 sm:mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-2">Your Placement Journey</h2>
+        <p className="text-slate-600 text-sm sm:text-base">Track your progress and stay motivated</p>
       </div>
 
       {/* Readiness Score */}
@@ -604,7 +643,7 @@ const Dashboard = () => {
         </CardContent>
       </Card>
 
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
         {/* Progress Cards */}
         <Card className="border-0 shadow-lg">
           <CardHeader className="pb-3">
@@ -1218,36 +1257,37 @@ const RoadmapView = () => {
   const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <div className="text-center flex-1">
-            <h2 className="text-3xl font-bold text-slate-800 mb-2">Your Learning Roadmap</h2>
-            <p className="text-slate-600">Personalized for {roadmap.target_company} • {roadmap.domain}</p>
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-8">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-3 sm:space-y-0">
+          <div className="text-center sm:text-left flex-1">
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-2">Your Learning Roadmap</h2>
+            <p className="text-slate-600 text-sm sm:text-base">Personalized for {roadmap.target_company} • {roadmap.domain}</p>
           </div>
           <Button
             onClick={resetRoadmap}
             disabled={resetting}
             variant="outline"
-            className="flex items-center space-x-2 text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400"
+            className="flex items-center justify-center space-x-2 text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400 text-sm px-3 py-2"
           >
             <RotateCcw className="h-4 w-4" />
-            <span>{resetting ? 'Resetting...' : 'Reset Roadmap'}</span>
+            <span className="hidden sm:inline">{resetting ? 'Resetting...' : 'Reset Roadmap'}</span>
+            <span className="sm:hidden">{resetting ? 'Reset...' : 'Reset'}</span>
           </Button>
         </div>
       </div>
 
       {/* Progress Overview */}
       <Card className="border-0 shadow-lg">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
             <div>
-              <h3 className="text-lg font-semibold text-slate-800">Overall Progress</h3>
-              <p className="text-slate-600">You've completed {completedTasks} out of {totalTasks} tasks</p>
+              <h3 className="text-base sm:text-lg font-semibold text-slate-800">Overall Progress</h3>
+              <p className="text-slate-600 text-sm sm:text-base">You've completed {completedTasks} out of {totalTasks} tasks</p>
             </div>
-            <div className="text-3xl font-bold text-orange-600">{Math.round(progressPercentage)}%</div>
+            <div className="text-2xl sm:text-3xl font-bold text-orange-600">{Math.round(progressPercentage)}%</div>
           </div>
-          <Progress value={progressPercentage} className="h-3" />
+          <Progress value={progressPercentage} className="h-2 sm:h-3" />
         </CardContent>
       </Card>
 
@@ -1256,8 +1296,8 @@ const RoadmapView = () => {
         {roadmap?.roadmap_items && roadmap.roadmap_items.length > 0 ? (
           roadmap.roadmap_items.map((item, index) => (
             <Card key={index} className={`border-0 shadow-md transition-all hover:shadow-lg ${item.completed ? 'bg-green-50 border-l-4 border-l-green-500' : 'bg-white'}`}>
-              <CardContent className="p-6">
-                <div className="flex items-start space-x-4">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-start space-x-3 sm:space-x-4">
                   <button
                     onClick={() => toggleTask(item.topic, !item.completed)}
                     className={`mt-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
@@ -1269,27 +1309,27 @@ const RoadmapView = () => {
                     {item.completed && <CheckCircle className="h-4 w-4" />}
                   </button>
                   
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className={`text-lg font-semibold ${item.completed ? 'text-green-800 line-through' : 'text-slate-800'}`}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 space-y-2 sm:space-y-0">
+                      <h3 className={`text-base sm:text-lg font-semibold ${item.completed ? 'text-green-800 line-through' : 'text-slate-800'} pr-0 sm:pr-4`}>
                         {item.topic}
                       </h3>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant={item.priority === 'High' ? 'destructive' : item.priority === 'Medium' ? 'default' : 'secondary'}>
+                      <div className="flex items-center space-x-2 flex-shrink-0">
+                        <Badge variant={item.priority === 'High' ? 'destructive' : item.priority === 'Medium' ? 'default' : 'secondary'} className="text-xs">
                           {item.priority}
                         </Badge>
-                        <span className="text-sm text-slate-500">{item.estimated_hours}h</span>
+                        <span className="text-xs sm:text-sm text-slate-500">{item.estimated_hours}h</span>
                       </div>
                     </div>
                     
-                    <p className="text-slate-600 mb-3">{item.description}</p>
+                    <p className="text-slate-600 mb-3 text-sm sm:text-base">{item.description}</p>
                     
                     {item.resources && item.resources.length > 0 && (
                       <div>
-                        <h4 className="text-sm font-medium text-slate-700 mb-2">Resources:</h4>
-                        <div className="flex flex-wrap gap-2">
+                        <h4 className="text-xs sm:text-sm font-medium text-slate-700 mb-2">Resources:</h4>
+                        <div className="flex flex-wrap gap-1 sm:gap-2">
                           {item.resources.map((resource, idx) => (
-                            <Badge key={idx} variant="outline" className="text-blue-600 border-blue-200">
+                            <Badge key={idx} variant="outline" className="text-blue-600 border-blue-200 text-xs">
                               {resource}
                             </Badge>
                           ))}
@@ -1474,29 +1514,29 @@ const MockTests = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-slate-800 mb-2">Mock Tests</h2>
-        <p className="text-slate-600">Practice with AI-powered assessments</p>
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-8">
+      <div className="text-center mb-6 sm:mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-2">Mock Tests</h2>
+        <p className="text-slate-600 text-sm sm:text-base">Practice with AI-powered assessments</p>
       </div>
 
       {/* Test Options */}
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {[
           { type: 'DSA', title: 'Data Structures & Algorithms', description: 'Test your problem-solving skills', icon: Code },
           { type: 'Aptitude', title: 'Aptitude & Reasoning', description: 'Logical and analytical thinking', icon: Brain },
           { type: 'Technical', title: 'Technical Concepts', description: 'OS, DBMS, Networks, and more', icon: BookOpen }
         ].map(({ type, title, description, icon: Icon }) => (
           <Card key={type} className="border-0 shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onClick={() => startTest(type)}>
-            <CardContent className="p-6 text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Icon className="h-8 w-8 text-white" />
+            <CardContent className="p-4 sm:p-6 text-center">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <Icon className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-800 mb-2">{title}</h3>
-              <p className="text-slate-600 mb-4">{description}</p>
+              <h3 className="text-base sm:text-lg font-semibold text-slate-800 mb-2">{title}</h3>
+              <p className="text-slate-600 mb-3 sm:mb-4 text-sm sm:text-base">{description}</p>
               <Button 
                 disabled={loading || testInProgress} 
-                className="w-full"
+                className="w-full text-sm sm:text-base"
                 onClick={() => startTest(type)}
               >
                 {loading ? 'Starting...' : testInProgress ? 'Test in Progress' : 'Start Test'}
@@ -1559,6 +1599,7 @@ const ChatRoom = () => {
   const [companies, setCompanies] = useState([]);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [connected, setConnected] = useState(false);
+  const [showCompanyList, setShowCompanyList] = useState(false);
 
   useEffect(() => {
     fetchCompanies();
@@ -1658,16 +1699,51 @@ const ChatRoom = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-6 pb-24 md:pb-6">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-6">
-          <h2 className="text-3xl font-bold text-slate-800 mb-2">Company Communities</h2>
-          <p className="text-slate-600">Connect with peers preparing for the same companies</p>
+        <div className="text-center mb-4 sm:mb-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-2">Company Communities</h2>
+          <p className="text-slate-600 text-sm sm:text-base">Connect with peers preparing for the same companies</p>
+        </div>
+
+        {/* Mobile Company Selector */}
+        <div className="lg:hidden mb-4">
+          <button
+            onClick={() => setShowCompanyList(!showCompanyList)}
+            className="w-full flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg shadow-sm"
+          >
+            <div className="flex items-center space-x-2">
+              <Users className="h-5 w-5 text-orange-600" />
+              <span className="font-medium text-slate-800">{selectedCompany}</span>
+            </div>
+            <svg className={`h-5 w-5 text-slate-500 transition-transform ${showCompanyList ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          {showCompanyList && (
+            <div className="mt-2 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              {companies.slice(0, 10).map(company => (
+                <button
+                  key={company}
+                  onClick={() => {
+                    setSelectedCompany(company);
+                    setShowCompanyList(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-b-0 ${
+                    selectedCompany === company ? 'bg-orange-50 text-orange-700 font-medium' : 'text-slate-700'
+                  }`}
+                >
+                  {company}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="grid lg:grid-cols-4 gap-6">
-          {/* Company List */}
-          <Card className="border-0 shadow-lg lg:col-span-1">
+          {/* Desktop Company List */}
+          <Card className="hidden lg:block border-0 shadow-lg lg:col-span-1">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Users className="h-5 w-5" />
@@ -1694,12 +1770,21 @@ const ChatRoom = () => {
           {/* Chat Area */}
           <Card className="border-0 shadow-lg lg:col-span-3">
             <CardHeader className="border-b">
-              <CardTitle className="flex items-center space-x-2">
-                <MessageCircle className="h-5 w-5 text-orange-600" />
-                <span>{selectedCompany} Community</span>
-                <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'}`} />
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <MessageCircle className="h-5 w-5 text-orange-600" />
+                  <span className="text-sm sm:text-base">{selectedCompany} Community</span>
+                  <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'}`} />
+                </div>
+                {/* Mobile Company Selector Button */}
+                <button
+                  onClick={() => setShowCompanyList(!showCompanyList)}
+                  className="lg:hidden p-1 text-slate-500 hover:text-slate-700"
+                >
+                  <Users className="h-5 w-5" />
+                </button>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs sm:text-sm">
                 Share experiences, tips, and resources 
                 {connected ? ' • Connected' : ' • Disconnected'}
               </CardDescription>
@@ -1707,10 +1792,10 @@ const ChatRoom = () => {
             
             <CardContent className="p-0">
               {/* Messages */}
-              <div className="h-96 overflow-y-auto p-4 space-y-3">
+              <div className="h-80 sm:h-96 overflow-y-auto p-3 sm:p-4 space-y-3">
                 {messages.map((message, index) => (
                   <div key={message.id || index} className={`flex ${message.user_name === user?.name ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-xs lg:max-w-sm px-4 py-2 rounded-lg ${
+                    <div className={`max-w-[280px] sm:max-w-xs lg:max-w-sm px-3 sm:px-4 py-2 rounded-lg ${
                       message.user_name === 'System' 
                         ? 'bg-slate-100 text-slate-600 text-sm text-center mx-auto'
                         : message.user_name === user?.name
@@ -1720,7 +1805,7 @@ const ChatRoom = () => {
                       {message.user_name !== 'System' && message.user_name !== user?.name && (
                         <div className="text-xs font-medium mb-1 text-slate-600">{message.user_name}</div>
                       )}
-                      <div>{message.message}</div>
+                      <div className="text-sm sm:text-base break-words">{message.message}</div>
                       <div className={`text-xs mt-1 ${
                         message.user_name === user?.name ? 'text-orange-100' : 'text-slate-500'
                       }`}>
@@ -1732,20 +1817,20 @@ const ChatRoom = () => {
               </div>
 
               {/* Message Input */}
-              <div className="border-t p-4">
+              <div className="border-t p-3 sm:p-4">
                 <div className="flex space-x-2">
                   <Textarea
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder={`Message ${selectedCompany} community...`}
-                    className="flex-1 resize-none min-h-[40px]"
+                    className="flex-1 resize-none min-h-[40px] text-sm sm:text-base"
                     rows={1}
                   />
                   <Button 
                     onClick={sendMessage}
                     disabled={!newMessage.trim()}
-                    className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+                    className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 px-3 sm:px-4"
                   >
                     <Send className="h-4 w-4" />
                   </Button>
@@ -1761,7 +1846,7 @@ const ChatRoom = () => {
 
 // Profile Component
 const ProfileView = ({ setSetupStep }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [profile, setProfile] = useState({});
   const [goals, setGoals] = useState(null);
   const [survey, setSurvey] = useState(null);
@@ -1929,13 +2014,29 @@ const ProfileView = ({ setSetupStep }) => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-slate-800 mb-2">Profile Settings</h2>
-        <p className="text-slate-600">Manage your account and preferences</p>
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 pb-24 md:pb-8">
+      <div className="text-center mb-6 sm:mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-2">Profile Settings</h2>
+        <p className="text-slate-600 text-sm sm:text-base">Manage your account and preferences</p>
       </div>
 
-      <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
+      {/* Mobile Logout Button */}
+      <div className="md:hidden mb-4">
+        <Card className="border-0 shadow-lg">
+          <CardContent className="p-4">
+            <Button 
+              onClick={logout}
+              variant="destructive"
+              className="w-full flex items-center justify-center space-x-2"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Sign Out</span>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {/* Basic Info */}
         <Card className="border-0 shadow-lg">
           <CardHeader>
@@ -2198,7 +2299,7 @@ const MainApp = () => {
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50">
       <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
       
-      <main className="pb-8">
+      <main className="pb-24 md:pb-8">
         {activeTab === 'dashboard' && <Dashboard />}
         {activeTab === 'roadmap' && <RoadmapView />}
         {activeTab === 'tests' && <MockTests />}
