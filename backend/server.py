@@ -994,9 +994,6 @@ async def health_check():
     except Exception as e:
         return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
 
-# Export the socket app for the ASGI server
-app = socket_app
-
 # Debug endpoint to test if app is working
 @main_app.get("/test-socket")
 async def test_socket():
@@ -1014,7 +1011,7 @@ async def socket_debug():
         "socket_io_configured": sio is not None,
         "transport_modes": ["polling", "websocket"],
         "cors_origins": [
-            
+            "https://crackitai-app.vercel.app",
             "https://crackit-ai-ueu5.onrender.com",
             "http://localhost:3000",
             "http://127.0.0.1:3000",
@@ -1026,9 +1023,16 @@ async def socket_debug():
 
 # Socket.IO endpoints handled automatically by ASGIApp
 
+# Export the socket app for the ASGI server (after all routes are defined)
+app = socket_app
+
+# For local development with uvicorn, expose main_app to avoid Socket.IO routing issues
+# Use: uvicorn server:main_app --reload
+# For production with Socket.IO: use server:app or server:socket_app
+
 # Make sure both apps are available for different deployment scenarios
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=False)
+    uvicorn.run(main_app, host="0.0.0.0", port=8000, reload=False)
 
 # Render.com deployment - Direct ASGI app export
 application = socket_app

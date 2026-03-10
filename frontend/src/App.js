@@ -65,6 +65,7 @@ import {
   Home as HomeIcon,
   Settings,
   RotateCcw,
+  Loader2,
 } from "lucide-react";
 
 const BACKEND_URL =
@@ -73,16 +74,15 @@ const BACKEND_URL =
   "http://127.0.0.1:8000";
 const API = `${BACKEND_URL}/api`;
 
-// Backend Health Check Component
+// Backend Health Check Component - Small indicator only
 const BackendHealthCheck = () => {
-  const [status, setStatus] = useState("checking"); // 'checking', 'healthy', 'waking'
-  const [retryCount, setRetryCount] = useState(0);
+  const [status, setStatus] = useState("checking");
 
   useEffect(() => {
     const checkHealth = async () => {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
 
         const response = await fetch(`${BACKEND_URL}/health`, {
           signal: controller.signal,
@@ -93,58 +93,26 @@ const BackendHealthCheck = () => {
         if (response.ok) {
           setStatus("healthy");
         } else {
-          throw new Error("Health check failed");
+          setStatus("down");
         }
       } catch (error) {
-        if (retryCount < 6) {
-          setStatus("waking");
-          setTimeout(() => {
-            setRetryCount((prev) => prev + 1);
-          }, 5000); // Retry every 5 seconds
-        } else {
-          setStatus("error");
-        }
+        setStatus("down");
       }
     };
 
-    if (status === "checking" || status === "waking") {
-      checkHealth();
-    }
-  }, [retryCount, status]);
+    checkHealth();
+    const interval = setInterval(checkHealth, 10000); // Check every 10 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   if (status === "healthy") return null;
 
   return (
-    <div
-      className={`fixed top-0 left-0 right-0 z-50 p-3 text-center text-sm ${
-        status === "waking"
-          ? "bg-yellow-500 text-black"
-          : status === "error"
-            ? "bg-red-500 text-white"
-            : "bg-blue-500 text-white"
-      }`}
-    >
-      {status === "checking" && (
-        <div className="flex items-center justify-center gap-2">
-          <RotateCcw className="animate-spin h-4 w-4" />
-          <span>Connecting to server...</span>
-        </div>
-      )}
-      {status === "waking" && (
-        <div className="flex items-center justify-center gap-2">
-          <RotateCcw className="animate-spin h-4 w-4" />
-          <span>
-            ⚡ Server is waking up (Render free tier) - Please wait 30-60
-            seconds... ({retryCount}/6)
-          </span>
-        </div>
-      )}
-      {status === "error" && (
-        <div>
-          ❌ Unable to connect to server. Please check your internet connection
-          or try again later.
-        </div>
-      )}
+    <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+      <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-6 py-3 rounded-lg shadow-lg text-sm flex items-center gap-2 pointer-events-auto">
+        <RotateCcw className="animate-spin h-4 w-4" />
+        <span className="font-medium">Server starting...</span>
+      </div>
     </div>
   );
 };
@@ -328,6 +296,7 @@ const AuthPage = () => {
     graduation_year: 2024,
     phone: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Password strength checker
   const getPasswordStrength = (password) => {
@@ -371,6 +340,9 @@ const AuthPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Prevent double submission
+    if (isSubmitting) return;
+
     // Validation for registration
     if (currentView === "register") {
       if (!passwordStrength.isStrong) {
@@ -393,26 +365,32 @@ const AuthPage = () => {
       }
     }
 
-    if (currentView === "login") {
-      const success = await login(formData.email, formData.password);
-      if (success) {
-        // Clean up any aria-hidden attributes
-        const rootElement = document.getElementById("root");
-        if (rootElement) {
-          rootElement.removeAttribute("aria-hidden");
-          rootElement.removeAttribute("data-aria-hidden");
+    setIsSubmitting(true);
+
+    try {
+      if (currentView === "login") {
+        const success = await login(formData.email, formData.password);
+        if (success) {
+          // Clean up any aria-hidden attributes
+          const rootElement = document.getElementById("root");
+          if (rootElement) {
+            rootElement.removeAttribute("aria-hidden");
+            rootElement.removeAttribute("data-aria-hidden");
+          }
+        }
+      } else if (currentView === "register") {
+        const success = await register(formData);
+        if (success) {
+          // Clean up any aria-hidden attributes
+          const rootElement = document.getElementById("root");
+          if (rootElement) {
+            rootElement.removeAttribute("aria-hidden");
+            rootElement.removeAttribute("data-aria-hidden");
+          }
         }
       }
-    } else if (currentView === "register") {
-      const success = await register(formData);
-      if (success) {
-        // Clean up any aria-hidden attributes
-        const rootElement = document.getElementById("root");
-        if (rootElement) {
-          rootElement.removeAttribute("aria-hidden");
-          rootElement.removeAttribute("data-aria-hidden");
-        }
-      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -643,9 +621,21 @@ const AuthPage = () => {
 
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+              disabled={isSubmitting}
+              className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {currentView === "login" ? "Sign In" : "Create Account"}
+              {isSubmitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {currentView === "login"
+                    ? "Signing in..."
+                    : "Creating account..."}
+                </span>
+              ) : currentView === "login" ? (
+                "Sign In"
+              ) : (
+                "Create Account"
+              )}
             </Button>
           </form>
 
