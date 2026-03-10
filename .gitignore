@@ -97,7 +97,8 @@ jspm_packages/
 
 # Gatsby files
 .cache/
-public
+# public folder commented out to allow frontend/public for React app
+# public
 
 # IDE
 .vscode/
