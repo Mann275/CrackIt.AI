@@ -101,14 +101,14 @@ const BackendHealthCheck = () => {
     };
 
     checkHealth();
-    const interval = setInterval(checkHealth, 10000); // Check every 10 seconds
+    const interval = setInterval(checkHealth, 2000); // Check every 10 seconds
     return () => clearInterval(interval);
   }, []);
 
   if (status === "healthy") return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+    <div className="fixed top-4 left-0 right-0 z-50 flex justify-center pointer-events-none">
       <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-6 py-3 rounded-lg shadow-lg text-sm flex items-center gap-2 pointer-events-auto">
         <RotateCcw className="animate-spin h-4 w-4" />
         <span className="font-medium">Server starting...</span>

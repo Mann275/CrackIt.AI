@@ -107,8 +107,8 @@ main_app.add_middleware(
 )
 
 # Create socket app that combines FastAPI with SocketIO
-# Use default path for better Render compatibility
-socket_app = socketio.ASGIApp(sio, main_app)
+# IMPORTANT: All routes must be defined on main_app BEFORE this line
+socket_app = socketio.ASGIApp(sio, main_app, socketio_path='socket.io')
 
 # ===== MODELS =====
 
@@ -896,6 +896,23 @@ async def send_message(sid, data):
         'company': company
     }, room=company)
 
+# IMPORTANT: Define all API endpoints BEFORE mounting static files
+# Health check endpoint - must be before static files mount
+@main_app.get("/health")
+async def health_check():
+    try:
+        # Test database connection
+        await client.admin.command('ping')
+        return {
+            "status": "healthy", 
+            "database": "connected", 
+            "db_name": db.name,
+            "socketio_configured": sio is not None,
+            "cors_origins": "*"
+        }
+    except Exception as e:
+        return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
+
 # Include router in app FIRST (before static files)
 main_app.include_router(api_router)
 
@@ -974,25 +991,10 @@ async def get_manifest():
         return FileResponse(manifest_path, media_type="application/json")
     raise HTTPException(status_code=404, detail="Manifest not found")
 
-# Add health check endpoint
+# Root endpoint for API status
 @main_app.get("/")
 async def root():
     return {"message": "CrackIt.AI API is running!", "status": "healthy", "socketio": "enabled"}
-
-@main_app.get("/health")
-async def health_check():
-    try:
-        # Test database connection
-        await client.admin.command('ping')
-        return {
-            "status": "healthy", 
-            "database": "connected", 
-            "db_name": db.name,
-            "socketio_configured": sio is not None,
-            "cors_origins": "*"
-        }
-    except Exception as e:
-        return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
 
 # Debug endpoint to test if app is working
 @main_app.get("/test-socket")
