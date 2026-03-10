@@ -2991,5 +2991,3 @@ export default function AppRoot() {
     </Router>
   );
 }
-
-VITE_API_URL=https://emergency-qr-jp5i.onrender.com/api
