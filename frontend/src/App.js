@@ -172,11 +172,21 @@ const AuthProvider = ({ children }) => {
 
   const fetchProfile = async () => {
     try {
-      const response = await axios.get(`${API}/profile`);
+      // Add timeout to profile fetch (2 seconds)
+      const response = await axios.get(`${API}/profile`, {
+        timeout: 2000,
+      });
       setUser(response.data);
     } catch (error) {
-      console.error("Failed to fetch profile:", error);
-      logout();
+      console.error(
+        "Failed to fetch profile (server might be down):",
+        error.message,
+      );
+      // Silently clear auth state and show home page
+      setUser(null);
+      setToken(null);
+      localStorage.removeItem("token");
+      delete axios.defaults.headers.common["Authorization"];
     } finally {
       setLoading(false);
     }

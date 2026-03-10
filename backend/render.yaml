@@ -4,16 +4,16 @@ services:
     runtime: python
     rootDir: backend
     buildCommand: |
-      python3.12 --version &&
-      python3.12 -m pip install --upgrade pip setuptools wheel &&
-      python3.12 -m pip install -r requirements.txt &&
+      python3.11 --version &&
+      python3.11 -m pip install --upgrade pip setuptools wheel &&
+      python3.11 -m pip install -r requirements.txt &&
       cd ../frontend &&
       npm ci &&
       npm run build &&
       cd ../backend
-    startCommand: python3.12 -m uvicorn server:app --host 0.0.0.0 --port $PORT --workers 1
+    startCommand: python3.11 -m uvicorn server:app --host 0.0.0.0 --port $PORT --workers 1
     plan: free
-    pythonVersion: "3.12"
+    pythonVersion: "3.11"
     envVars:
       - key: MONGO_URL
         sync: false
