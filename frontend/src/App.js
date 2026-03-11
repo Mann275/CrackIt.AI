@@ -74,48 +74,43 @@ const BACKEND_URL =
   "http://127.0.0.1:8000";
 const API = `${BACKEND_URL}/api`;
 
-// Backend Health Check Component - Small indicator only
-const BackendHealthCheck = () => {
-  const [status, setStatus] = useState("checking");
-
-  useEffect(() => {
-    const checkHealth = async () => {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-        const response = await fetch(`${BACKEND_URL}/health`, {
-          signal: controller.signal,
-          cache: "no-cache",
-        });
-        clearTimeout(timeoutId);
-
-        if (response.ok) {
-          setStatus("healthy");
-        } else {
-          setStatus("down");
-        }
-      } catch (error) {
-        setStatus("down");
-      }
-    };
-
-    checkHealth();
-    const interval = setInterval(checkHealth, 2000); // Check every 10 seconds
-    return () => clearInterval(interval);
-  }, []);
-
-  if (status === "healthy") return null;
-
-  return (
-    <div className="fixed top-4 left-0 right-0 z-50 flex justify-center pointer-events-none">
-      <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-6 py-3 rounded-lg shadow-lg text-sm flex items-center gap-2 pointer-events-auto">
-        <RotateCcw className="animate-spin h-4 w-4" />
-        <span className="font-medium">Server starting...</span>
-      </div>
-    </div>
-  );
-};
+// Backend Health Check Component - DISABLED
+// Now "Server starting..." only shows when user clicks login/signup
+// const BackendHealthCheck = () => {
+//   const [status, setStatus] = useState("checking");
+//   useEffect(() => {
+//     const checkHealth = async () => {
+//       try {
+//         const controller = new AbortController();
+//         const timeoutId = setTimeout(() => controller.abort(), 5000);
+//         const response = await fetch(`${BACKEND_URL}/health`, {
+//           signal: controller.signal,
+//           cache: "no-cache",
+//         });
+//         clearTimeout(timeoutId);
+//         if (response.ok) {
+//           setStatus("healthy");
+//         } else {
+//           setStatus("down");
+//         }
+//       } catch (error) {
+//         setStatus("down");
+//       }
+//     };
+//     checkHealth();
+//     const interval = setInterval(checkHealth, 2000);
+//     return () => clearInterval(interval);
+//   }, []);
+//   if (status === "healthy") return null;
+//   return (
+//     <div className="fixed top-4 left-0 right-0 z-50 flex justify-center pointer-events-none">
+//       <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-6 py-3 rounded-lg shadow-lg text-sm flex items-center gap-2 pointer-events-auto">
+//         <RotateCcw className="animate-spin h-4 w-4" />
+//         <span className="font-medium">Server starting...</span>
+//       </div>
+//     </div>
+//   );
+// };
 
 // Clean console and filter WebSocket errors (only in development)
 if (process.env.NODE_ENV === "development") {
@@ -138,9 +133,7 @@ if (process.env.NODE_ENV === "development") {
   // Clear previous console messages
   setTimeout(() => {
     console.clear();
-    console.log("🚀 CrackIt.AI - Clean Development Mode");
-    console.log("📡 Backend:", BACKEND_URL);
-    console.log("🔗 API Endpoint:", API);
+    console.log("🚀 CrackIt.AI");
     console.log("✅ App loaded - Console cleaned");
   }, 1500);
 }
@@ -192,7 +185,7 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (email, password) => {
+  const login = async (email, password, suppressConnectionError = false) => {
     try {
       const response = await axios.post(`${API}/auth/login`, {
         email,
@@ -209,18 +202,34 @@ const AuthProvider = ({ children }) => {
         title: "Welcome back!",
         description: "You've successfully logged in.",
       });
-      return true;
+      return { success: true, isConnectionError: false };
     } catch (error) {
-      toast({
-        title: "Login failed",
-        description: error.response?.data?.detail || "Invalid credentials",
-        variant: "destructive",
-      });
-      return false;
+      // Check if it's a connection error
+      const isConnectionError =
+        !error.response &&
+        (error.code === "ERR_NETWORK" ||
+          error.code === "ECONNREFUSED" ||
+          error.message.includes("Network Error") ||
+          error.message.includes("ERR_CONNECTION_REFUSED"));
+
+      // Don't show toast for connection errors if we're going to retry
+      if (!suppressConnectionError || !isConnectionError) {
+        toast({
+          title: "Login failed",
+          description:
+            error.response?.data?.detail ||
+            (isConnectionError
+              ? "Server is starting..."
+              : "Invalid credentials"),
+          variant: "destructive",
+        });
+      }
+
+      return { success: false, isConnectionError };
     }
   };
 
-  const register = async (userData) => {
+  const register = async (userData, suppressConnectionError = false) => {
     try {
       const response = await axios.post(`${API}/auth/register`, userData);
       const { access_token, user: newUser } = response.data;
@@ -234,14 +243,28 @@ const AuthProvider = ({ children }) => {
         title: "Welcome to CrackIt.AI!",
         description: "Your account has been created successfully.",
       });
-      return true;
+      return { success: true, isConnectionError: false };
     } catch (error) {
-      toast({
-        title: "Registration failed",
-        description: error.response?.data?.detail || "Please try again",
-        variant: "destructive",
-      });
-      return false;
+      // Check if it's a connection error
+      const isConnectionError =
+        !error.response &&
+        (error.code === "ERR_NETWORK" ||
+          error.code === "ECONNREFUSED" ||
+          error.message.includes("Network Error") ||
+          error.message.includes("ERR_CONNECTION_REFUSED"));
+
+      // Don't show toast for connection errors if we're going to retry
+      if (!suppressConnectionError || !isConnectionError) {
+        toast({
+          title: "Registration failed",
+          description:
+            error.response?.data?.detail ||
+            (isConnectionError ? "Server is starting..." : "Please try again"),
+          variant: "destructive",
+        });
+      }
+
+      return { success: false, isConnectionError };
     }
   };
 
@@ -307,6 +330,7 @@ const AuthPage = () => {
     phone: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showServerStarting, setShowServerStarting] = useState(false);
 
   // Password strength checker
   const getPasswordStrength = (password) => {
@@ -376,32 +400,109 @@ const AuthPage = () => {
     }
 
     setIsSubmitting(true);
+    setShowServerStarting(true);
 
-    try {
-      if (currentView === "login") {
-        const success = await login(formData.email, formData.password);
-        if (success) {
-          // Clean up any aria-hidden attributes
-          const rootElement = document.getElementById("root");
-          if (rootElement) {
-            rootElement.removeAttribute("aria-hidden");
-            rootElement.removeAttribute("data-aria-hidden");
+    // Helper function to check if server is healthy
+    const checkServerHealth = async () => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const response = await fetch(`${BACKEND_URL}/health`, {
+          signal: controller.signal,
+          cache: "no-cache",
+        });
+        clearTimeout(timeoutId);
+        return response.ok;
+      } catch (error) {
+        return false;
+      }
+    };
+
+    // Helper function to attempt login/register
+    const attemptAuth = async (suppressErrors = false) => {
+      try {
+        if (currentView === "login") {
+          const result = await login(
+            formData.email,
+            formData.password,
+            suppressErrors,
+          );
+          if (result.success) {
+            const rootElement = document.getElementById("root");
+            if (rootElement) {
+              rootElement.removeAttribute("aria-hidden");
+              rootElement.removeAttribute("data-aria-hidden");
+            }
           }
+          return result;
+        } else if (currentView === "register") {
+          const result = await register(formData, suppressErrors);
+          if (result.success) {
+            const rootElement = document.getElementById("root");
+            if (rootElement) {
+              rootElement.removeAttribute("aria-hidden");
+              rootElement.removeAttribute("data-aria-hidden");
+            }
+          }
+          return result;
         }
-      } else if (currentView === "register") {
-        const success = await register(formData);
-        if (success) {
-          // Clean up any aria-hidden attributes
-          const rootElement = document.getElementById("root");
-          if (rootElement) {
-            rootElement.removeAttribute("aria-hidden");
-            rootElement.removeAttribute("data-aria-hidden");
-          }
+      } catch (error) {
+        const isConnectionError = !error.response;
+        return { success: false, isConnectionError };
+      }
+    };
+
+    // Try authentication first (suppress connection errors as we'll retry)
+    const firstAttempt = await attemptAuth(true);
+
+    if (firstAttempt.success) {
+      // Success on first try
+      setIsSubmitting(false);
+      setShowServerStarting(false);
+      return;
+    }
+
+    // If it's not a connection error (e.g., wrong credentials), don't retry
+    if (!firstAttempt.isConnectionError) {
+      setIsSubmitting(false);
+      setShowServerStarting(false);
+      return;
+    }
+
+    // If failed due to connection, start health check loop
+    console.log("Server down, starting health checks...");
+    const healthCheckInterval = setInterval(async () => {
+      console.log("Checking server health...");
+      const isHealthy = await checkServerHealth();
+
+      if (isHealthy) {
+        console.log("Server is healthy! Retrying authentication...");
+        clearInterval(healthCheckInterval);
+
+        // Retry authentication (don't suppress errors on retry)
+        const retryAttempt = await attemptAuth(false);
+
+        setIsSubmitting(false);
+        setShowServerStarting(false);
+
+        if (!retryAttempt.success) {
+          console.log("Authentication failed even after server is up");
         }
       }
-    } finally {
+    }, 2500); // Check every 2.5 seconds
+
+    // Set a max timeout of 60 seconds
+    setTimeout(() => {
+      clearInterval(healthCheckInterval);
       setIsSubmitting(false);
-    }
+      setShowServerStarting(false);
+      toast({
+        title: "Connection Timeout",
+        description:
+          "Server is taking too long to respond. Please try again later.",
+        variant: "destructive",
+      });
+    }, 60000);
   };
 
   // Show Home page by default
@@ -428,6 +529,16 @@ const AuthPage = () => {
   // Show Auth Form (login/register)
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 flex items-center justify-center p-4">
+      {/* Server Starting Banner */}
+      {showServerStarting && (
+        <div className="fixed top-4 left-0 right-0 z-50 flex justify-center pointer-events-none">
+          <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-6 py-3 rounded-lg shadow-lg text-sm flex items-center gap-2 pointer-events-auto">
+            <RotateCcw className="animate-spin h-4 w-4" />
+            <span className="font-medium">Server starting...</span>
+          </div>
+        </div>
+      )}
+
       <Card className="w-full max-w-md shadow-2xl border-0 relative">
         <CardHeader className="text-center space-y-2">
           {/* Back Button */}
@@ -2394,7 +2505,6 @@ const ProfileView = ({ setSetupStep }) => {
       setGoals(goalsRes.data);
       setSurvey(surveyRes.data);
       setCompanies(companiesRes.data.companies || []);
-      console.log("Profile domains loaded:", domainsRes.data.domains || []); // Debug log
       setDomains(domainsRes.data.domains || []);
       setLanguages(languagesRes.data.languages || []);
     } catch (error) {
@@ -2985,7 +3095,6 @@ export default function AppRoot() {
   return (
     <Router>
       <AuthProvider>
-        <BackendHealthCheck />
         <App />
       </AuthProvider>
     </Router>
